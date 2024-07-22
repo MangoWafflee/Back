@@ -30,6 +30,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Add gradlew permission
+      run: chmod +x ./gradlew
+      
     - name: Build with Gradle
       uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
       with:
