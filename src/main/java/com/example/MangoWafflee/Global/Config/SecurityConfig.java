@@ -1,9 +1,5 @@
 package com.example.MangoWafflee.Global.Config;
 
-import com.example.MangoWafflee.Global.Config.JWT.JwtAuthenticationFilter;
-import com.example.MangoWafflee.Service.CustomOAuth2UserService;
-import com.example.MangoWafflee.Service.UserDetailsServiceImpl;
-import com.example.MangoWafflee.Repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.example.MangoWafflee.Global.Config.JWT.JwtAuthenticationFilter;
+import com.example.MangoWafflee.Service.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
@@ -39,31 +38,16 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CustomOAuth2UserService customOAuth2UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        return new CustomOAuth2UserService(userRepository, passwordEncoder);
-    }
-
-    // 테스트 웹 페이지 추가시 수정할 예정
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/oauth2/**", "/loginpage", "/").permitAll()
+                                .requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .oauth2Login(oauth2Login ->
-                        oauth2Login
-                                .loginPage("/loginpage")
-                                .defaultSuccessUrl("/oauth2/loginSuccess")
-                                .failureUrl("/loginpage?error=true")
-                                .userInfoEndpoint(userInfoEndpoint ->
-                                        userInfoEndpoint.userService(customOAuth2UserService)
-                                )
                 );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
