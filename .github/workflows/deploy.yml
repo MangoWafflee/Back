@@ -51,6 +51,12 @@ jobs:
         echo "H2_USERNAME=${{ secrets.H2_USERNAME }}" >> $GITHUB_ENV
         echo "H2_PASSWORD=${{ secrets.H2_PASSWORD }}" >> $GITHUB_ENV
 
+    - name: Set env variables
+      run: |
+        echo "KAKAO_ID"=${{ secrets.KAKAO_ID }}" >> $GITHUB_ENV
+        echo "KAKAO_SECRET=${{ secrets.KAKAO_SECRET }}" >> $GITHUB_ENV
+        echo "KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}" >> $GITHUB_ENV
+      
     - name: Upload to AWS S3
       run: |
         aws deploy push \
