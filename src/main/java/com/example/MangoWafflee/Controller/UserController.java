@@ -83,6 +83,16 @@ public class UserController {
         return ResponseEntity.ok(remainingTime);
     }
 
+    //유저 토큰 정보 조회
+    @GetMapping("/token/{uid}")
+    public ResponseEntity<JWTDTO> getUserWithTokenInfo(@PathVariable String uid, @RequestHeader("Authorization") String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        JWTDTO userWithTokenInfo = userService.getUserWithTokenInfo(uid, token);
+        return ResponseEntity.ok(userWithTokenInfo);
+    }
+
     //닉네임 수정
     @PutMapping("/nickname/{uid}")
     public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody String nickname) {

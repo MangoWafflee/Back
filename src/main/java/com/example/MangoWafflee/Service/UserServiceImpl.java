@@ -134,6 +134,16 @@ public class UserServiceImpl implements UserService {
         return jwtTokenProvider.getTokenRemainingTime(token);
     }
 
+    //유저 토큰 정보 조회
+    @Override
+    public JWTDTO getUserWithTokenInfo(String uid, String token) {
+        UserEntity userEntity = userRepository.findByUid(uid)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+
+        Long remainingTime = jwtTokenProvider.getTokenRemainingTime(token);
+        return new JWTDTO(token, UserDTO.entityToDto(userEntity), remainingTime);
+    }
+
     //닉네임 수정
     @Override
     public UserDTO updateNickname(String uid, String nickname) {

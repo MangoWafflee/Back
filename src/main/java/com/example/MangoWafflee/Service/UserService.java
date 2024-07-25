@@ -17,6 +17,7 @@ public interface UserService {
     void deleteUser(String uid, UserDetails userDetails);
     Long refreshToken(UserDetails userDetails);
     Long getTokenRemainingTime(UserDetails userDetails);
+    JWTDTO getUserWithTokenInfo(String uid, String token);
     UserDTO updateNickname(String uid, String nickname);
     JWTDTO loginWithOAuth2(OAuth2User oAuth2User);
     UserDTO getKakaoUserInfo(String uid);

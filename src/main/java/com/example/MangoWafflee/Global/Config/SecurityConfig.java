@@ -47,23 +47,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/", "/login**", "/oauth2/**", "/login", "/loginFailure", "/error").permitAll()
-                                .requestMatchers("/user/kakao/**").authenticated()  // 카카오 유저 정보 조회 경로 보호
+                                .requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .oauth2Login(oauth2Login ->
-                        oauth2Login
-                                .loginPage("/login")
-                                .defaultSuccessUrl("/oauth2/loginSuccess")
-                                .failureUrl("/loginFailure")
-                                .userInfoEndpoint(userInfoEndpoint ->
-                                        userInfoEndpoint.userService(customOAuth2UserService())
-                                )
-                )
-                .formLogin(formLogin -> formLogin.disable());  // 폼 로그인 비활성화
+                );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
