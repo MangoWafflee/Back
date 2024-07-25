@@ -24,9 +24,9 @@ spring:
 #        show_sql: true
 
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/MangoWafflee?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
-    username: root
-    password: 12345678
+    url: ${DB_URL}
+    username: ${DB_ID}
+    password: ${DB_PW}
 
   jpa:
     show-sql: false
