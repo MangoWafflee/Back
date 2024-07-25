@@ -2,26 +2,39 @@ spring:
   application:
     name: MangoWafflee
 
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: 'jdbc:h2:mem:test'
-    username: sa
-    password: 1234
+#  datasource:
+#    driver-class-name: org.h2.Driver
+#    url: 'jdbc:h2:mem:test'
+#    username: sa
+#    password: 1234
+#
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+#
+#  jpa:
+#    database-platform: org.hibernate.dialect.H2Dialect
+#    hibernate:
+#      ddl-auto: update
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.H2Dialect
+#        format_sql: true
+#        show_sql: true
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/MangoWafflee?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
+    username: root
+    password: 12345678
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-        show_sql: true
+        format_sql: false
 
   security:
     oauth2:
@@ -47,3 +60,8 @@ spring:
 jwt:
   secret: adjfonvlksdlkajfoeilaknlckapokpvnpejfaejpojdmasvnklepvoekpoafsdlkjenjpfoajpef
   expiration: 1800000
+
+google:
+  cloud:
+    credentials:
+      base64key: ${BUCKET_INCODING_KEY}
