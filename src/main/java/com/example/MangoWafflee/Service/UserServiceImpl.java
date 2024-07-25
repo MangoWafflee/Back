@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -132,15 +134,51 @@ public class UserServiceImpl implements UserService {
         return jwtTokenProvider.getTokenRemainingTime(token);
     }
 
-    //카카오 로그인 성공 시 호출되는 메서드
-    public JWTDTO loginWithOAuth2(OAuth2User oAuth2User) {
-        String uid = oAuth2User.getName();
+    //닉네임 수정
+    @Override
+    public UserDTO updateNickname(String uid, String nickname) {
         UserEntity userEntity = userRepository.findByUid(uid)
-                .orElseThrow(() -> new IllegalArgumentException("입력한 사용자 정보에 대해 카카오에 가입된 사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+
+        userEntity.setNickname(nickname);
+
+        UserEntity updatedUser = userRepository.save(userEntity);
+        logger.info("사용자 닉네임 업데이트 완료! " + updatedUser);
+        return UserDTO.entityToDto(updatedUser);
+    }
+
+    //카카오 로그인 성공 시 호출되는 메서드
+    @Override
+    public JWTDTO loginWithOAuth2(OAuth2User oAuth2User) {
+        String uid = oAuth2User.getAttribute("id").toString();
+        Map<String, Object> properties = oAuth2User.getAttribute("properties");
+        String name = properties != null ? (String) properties.get("nickname") : null;
+
+        UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
+
+        if (userEntity == null) {
+            userEntity = UserEntity.builder()
+                    .uid(uid)
+                    .name(name)
+                    .password(passwordEncoder.encode("oauth2user"))
+                    .build();
+            userRepository.save(userEntity);
+        } else {
+            userEntity.setName(name);
+            userRepository.save(userEntity);
+        }
 
         String token = jwtTokenProvider.generateToken(uid);
         logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
         return new JWTDTO(token, UserDTO.entityToDto(userEntity));
+    }
+
+    // 카카오 로그인 유저 정보 조회
+    @Override
+    public UserDTO getKakaoUserInfo(String uid) {
+        UserEntity userEntity = userRepository.findByUid(uid)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+        return UserDTO.entityToDto(userEntity);
     }
 }
 

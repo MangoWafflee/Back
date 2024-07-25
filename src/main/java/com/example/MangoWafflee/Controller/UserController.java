@@ -83,9 +83,23 @@ public class UserController {
         return ResponseEntity.ok(remainingTime);
     }
 
+    //닉네임 수정
+    @PutMapping("/nickname/{uid}")
+    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody String nickname) {
+        UserDTO updatedUser = userService.updateNickname(uid, nickname);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     //카카오 로그인 성공 시 호출되는 메서드
     @GetMapping("/loginSuccess")
     public JWTDTO loginSuccess(OAuth2User oAuth2User) {
         return userService.loginWithOAuth2(oAuth2User);
+    }
+
+    // 카카오 로그인 유저 정보 조회
+    @GetMapping("/kakao/{uid}")
+    public ResponseEntity<UserDTO> getKakaoUserInfo(@PathVariable String uid) {
+        UserDTO user = userService.getKakaoUserInfo(uid);
+        return ResponseEntity.ok(user);
     }
 }

@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/", "/login**", "/oauth2/**", "/login", "/loginFailure", "/error").permitAll()
+                                .requestMatchers("/user/kakao/**").authenticated()  // 카카오 유저 정보 조회 경로 보호
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManagement ->
@@ -61,7 +62,8 @@ public class SecurityConfig {
                                 .userInfoEndpoint(userInfoEndpoint ->
                                         userInfoEndpoint.userService(customOAuth2UserService())
                                 )
-                );
+                )
+                .formLogin(formLogin -> formLogin.disable());  // 폼 로그인 비활성화
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

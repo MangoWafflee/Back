@@ -36,7 +36,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> properties = oAuth2User.getAttribute("properties");
         Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
 
-        String nickname = properties != null ? (String) properties.get("nickname") : null;
+        String name = properties != null ? (String) properties.get("nickname") : null;
         String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
 
         // 사용자가 이미 존재하는지 확인
@@ -44,11 +44,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         UserEntity userEntity;
         if (userEntityOptional.isPresent()) {
             userEntity = userEntityOptional.get();
+            // 이름 업데이트
+            userEntity.setName(name);
         } else {
             // 존재하지 않으면 새로 생성
             userEntity = UserEntity.builder()
                     .uid(String.valueOf(id))
-                    .nickname(nickname)
+                    .name(name)
                     .password(passwordEncoder.encode("OAuth2_User_Password")) // 비밀번호 설정
                     .build();
             userRepository.save(userEntity);
@@ -58,5 +60,3 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new CustomOAuth2User(userEntity, oAuth2User.getAttributes());
     }
 }
-
-

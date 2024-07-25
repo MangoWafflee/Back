@@ -12,6 +12,7 @@ public class UserDTO {
     private Long id;
     private String uid;
     private String password;
+    private String name;
     private String nickname;
     private String image;
 
@@ -20,13 +21,14 @@ public class UserDTO {
                 userEntity.getId(),
                 userEntity.getUid(),
                 userEntity.getPassword(),
+                userEntity.getName(),
                 userEntity.getNickname(),
                 userEntity.getImage()
         );
     }
 
     public UserEntity dtoToEntity() {
-        return new UserEntity(id, uid, password, nickname, image);
+        return new UserEntity(id, uid, password, name, nickname, image);
     }
 }
 
