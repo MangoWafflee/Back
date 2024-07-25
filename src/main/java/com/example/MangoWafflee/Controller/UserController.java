@@ -3,13 +3,17 @@ package com.example.MangoWafflee.Controller;
 import com.example.MangoWafflee.DTO.JWTDTO;
 import com.example.MangoWafflee.DTO.UserDTO;
 import com.example.MangoWafflee.Service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -111,5 +115,15 @@ public class UserController {
     public ResponseEntity<UserDTO> getKakaoUserInfo(@PathVariable String uid) {
         UserDTO user = userService.getKakaoUserInfo(uid);
         return ResponseEntity.ok(user);
+    }
+
+    //카카오 유저 프로필 이미지 등록
+    @SneakyThrows
+    @PostMapping(value = "/image", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image) {
+        ObjectMapper mapper = new ObjectMapper();
+        UserDTO userDTO = mapper.readValue(userData, UserDTO.class);
+        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image);
+        return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
     }
 }

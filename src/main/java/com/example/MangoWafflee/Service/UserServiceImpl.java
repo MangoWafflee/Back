@@ -12,7 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import com.google.cloud.storage.Storage;
+import org.springframework.web.multipart.MultipartFile;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
 
+import java.io.IOException;
+import java.util.UUID;
 import java.util.Map;
 
 @Service
@@ -23,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final Storage storage;
 
     //회원가입
     @Override
@@ -188,6 +195,52 @@ public class UserServiceImpl implements UserService {
     public UserDTO getKakaoUserInfo(String uid) {
         UserEntity userEntity = userRepository.findByUid(uid)
                 .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+        return UserDTO.entityToDto(userEntity);
+    }
+
+    //카카오 유저 프로필 이미지 등록
+    @Override
+    public UserDTO addImageToUser(String uid, MultipartFile image) {
+        UserEntity userEntity = userRepository.findByUid(uid)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                // UUID를 사용해 버킷에 저장되는 미디어 파일들이 파일 이름 중복으로 충돌이 일어나지 않음
+                UUID uuid = UUID.randomUUID();
+                String fileExtension = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
+                String fileName = uuid.toString() + fileExtension;
+                String contentType;
+                switch (fileExtension.toLowerCase()) {
+                    case ".jpg":
+                    case ".jpeg":
+                        contentType = "image/jpeg";
+                        break;
+                    case ".png":
+                        contentType = "image/png";
+                        break;
+                    case ".bmp":
+                        contentType = "image/bmp";
+                        break;
+                    default:
+                        contentType = "application/octet-stream";
+                }
+                BlobId blobId = BlobId.of("mangowafflee", fileName);
+                BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                        .setContentType(contentType)
+                        .setContentDisposition("inline; filename=" + image.getOriginalFilename())
+                        .build();
+                storage.create(blobInfo, image.getBytes());
+                String imageUrl = "https://storage.cloud.google.com/mangowafflee/" + fileName;
+                userEntity.setImage(imageUrl);
+                userRepository.save(userEntity);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.", e);
+            }
+        } else {
+            throw new RuntimeException("유효하지 않은 이미지 파일입니다.");
+        }
+
         return UserDTO.entityToDto(userEntity);
     }
 }
