@@ -240,7 +240,6 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new RuntimeException("유효하지 않은 이미지 파일입니다.");
         }
-
         return UserDTO.entityToDto(userEntity);
     }
 }

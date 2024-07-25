@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -125,5 +126,13 @@ public class UserController {
         UserDTO userDTO = mapper.readValue(userData, UserDTO.class);
         UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image);
         return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
+    }
+
+    //카카오 유저 닉네임 설정
+    @PostMapping("/nickname/{uid}")
+    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request) {
+        String nickname = request.get("nickname");
+        UserDTO updatedUser = userService.updateNickname(uid, nickname);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 }
