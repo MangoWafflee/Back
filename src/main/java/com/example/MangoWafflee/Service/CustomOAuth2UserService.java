@@ -31,30 +31,30 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
 
-        String uid = oAuth2User.getAttribute(userNameAttributeName);
+        // Kakao 사용자 정보 추출
+        Long id = oAuth2User.getAttribute(userNameAttributeName);
         Map<String, Object> properties = oAuth2User.getAttribute("properties");
         Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
 
         String nickname = properties != null ? (String) properties.get("nickname") : null;
-        String profileImageUrl = properties != null ? (String) properties.get("profile_image") : null;
         String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
 
-        Optional<UserEntity> userEntityOptional = userRepository.findByUid(uid);
+        // 사용자가 이미 존재하는지 확인
+        Optional<UserEntity> userEntityOptional = userRepository.findByUid(String.valueOf(id));
         UserEntity userEntity;
         if (userEntityOptional.isPresent()) {
             userEntity = userEntityOptional.get();
-            userEntity.setNickname(nickname);
-            userEntity.setImage(profileImageUrl);
         } else {
+            // 존재하지 않으면 새로 생성
             userEntity = UserEntity.builder()
-                    .uid(uid)
+                    .uid(String.valueOf(id))
                     .nickname(nickname)
-                    .image(profileImageUrl)
-                    .password(passwordEncoder.encode("OAuth2_User_Password"))
+                    .password(passwordEncoder.encode("OAuth2_User_Password")) // 비밀번호 설정
                     .build();
             userRepository.save(userEntity);
         }
 
+        // OAuth2User 반환
         return new CustomOAuth2User(userEntity, oAuth2User.getAttributes());
     }
 }
