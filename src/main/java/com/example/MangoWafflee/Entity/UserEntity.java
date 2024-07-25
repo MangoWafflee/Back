@@ -1,9 +1,6 @@
 package com.example.MangoWafflee.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -25,9 +22,12 @@ public class UserEntity implements UserDetails {
     private Long id;
     private String uid;
     private String password;
-    private String name;
-    private String nickname;
     private String image;
+    private String name;
+
+    @Column(unique = true)
+    private String nickname;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
