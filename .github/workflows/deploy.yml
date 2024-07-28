@@ -66,7 +66,14 @@ jobs:
         echo "KAKAO_ID=${{ secrets.KAKAO_ID }}" >> $GITHUB_ENV
         echo "KAKAO_SECRET=${{ secrets.KAKAO_SECRET }}" >> $GITHUB_ENV
         echo "KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}" >> $GITHUB_ENV
-      
+        echo "DB_URL=${{ secrets.DB_URL }}" >> $GITHUB_ENV
+        echo "DB_ID=${{ secrets.DB_ID }}" >> $GITHUB_ENV
+        echo "DB_PW=${{ secrets.DB_PW }}" >> $GITHUB_ENV
+        echo "KAKAO_ID=${{ secrets.KAKAO_ID }}" >> $GITHUB_ENV
+        echo "KAKAO_SECRET=${{ secrets.KAKAO_SECRET }}" >> $GITHUB_ENV
+        echo "KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}" >> $GITHUB_ENV
+        echo "BUCKET_INCODING_KEY=${{ secrets.BUCKET_INCODING_KEY }}" >> $GITHUB_ENV
+
     - name: Upload to AWS S3
       run: |
         aws deploy push \
