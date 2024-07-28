@@ -1,0 +1,10 @@
+### RDS ###
+spring:
+  config:
+    activate:
+      on-profiles: prod
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_ID}
+    password: ${DB_PW}
