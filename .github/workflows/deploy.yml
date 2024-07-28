@@ -55,7 +55,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Set H2 Database
+    - name: Set RDS env
       run: |
         echo "DB_URL=${{ secrets.DB_URL }}" >> $GITHUB_ENV
         echo "DB_ID=${{ secrets.DB_ID }}" >> $GITHUB_ENV
