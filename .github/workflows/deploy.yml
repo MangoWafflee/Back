@@ -57,18 +57,12 @@ jobs:
 
     - name: Set H2 Database
       run: |
-        echo "H2_URL=${{ secrets.H2_URL }}" >> $GITHUB_ENV
-        echo "H2_USERNAME=${{ secrets.H2_USERNAME }}" >> $GITHUB_ENV
-        echo "H2_PASSWORD=${{ secrets.H2_PASSWORD }}" >> $GITHUB_ENV
-
-    - name: Set env variables
-      run: |
-        echo "KAKAO_ID=${{ secrets.KAKAO_ID }}" >> $GITHUB_ENV
-        echo "KAKAO_SECRET=${{ secrets.KAKAO_SECRET }}" >> $GITHUB_ENV
-        echo "KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}" >> $GITHUB_ENV
         echo "DB_URL=${{ secrets.DB_URL }}" >> $GITHUB_ENV
         echo "DB_ID=${{ secrets.DB_ID }}" >> $GITHUB_ENV
         echo "DB_PW=${{ secrets.DB_PW }}" >> $GITHUB_ENV
+
+    - name: Set env variables
+      run: |
         echo "KAKAO_ID=${{ secrets.KAKAO_ID }}" >> $GITHUB_ENV
         echo "KAKAO_SECRET=${{ secrets.KAKAO_SECRET }}" >> $GITHUB_ENV
         echo "KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}" >> $GITHUB_ENV
