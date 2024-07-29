@@ -46,6 +46,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    //닉네임으로 유저 조회
+    @GetMapping("/nickname/{nickname}")
+    public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname) {
+        UserDTO user = userService.getUserByNickname(nickname);
+        return ResponseEntity.ok(user);
+    }
+
     //아이디 중복 확인
     @GetMapping("/check-uid")
     public ResponseEntity<Boolean> isUidDuplicate(@RequestBody String uid) {

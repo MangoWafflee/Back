@@ -11,6 +11,7 @@ import java.util.Date;
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
     UserDTO getUserByUid(String uid);
+    UserDTO getUserByNickname(String nickname);
     boolean isUidDuplicate(String uid);
     boolean isNicknameDuplicate(String nickname);
     JWTDTO login(String uid, String password);

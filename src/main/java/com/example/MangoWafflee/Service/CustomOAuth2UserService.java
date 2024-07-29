@@ -44,13 +44,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         UserEntity userEntity;
         if (userEntityOptional.isPresent()) {
             userEntity = userEntityOptional.get();
-            // 이름 업데이트
+            // 이름 및 이메일 업데이트
             userEntity.setName(name);
+            userEntity.setEmail(email);
         } else {
             // 존재하지 않으면 새로 생성
             userEntity = UserEntity.builder()
                     .uid(String.valueOf(id))
                     .name(name)
+                    .email(email)
                     .password(passwordEncoder.encode("OAuth2_User_Password")) // 비밀번호 설정
                     .build();
             userRepository.save(userEntity);
@@ -60,3 +62,4 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new CustomOAuth2User(userEntity, oAuth2User.getAttributes());
     }
 }
+

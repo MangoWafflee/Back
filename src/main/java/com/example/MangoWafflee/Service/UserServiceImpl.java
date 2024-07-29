@@ -54,6 +54,16 @@ public class UserServiceImpl implements UserService {
         return UserDTO.entityToDto(userEntity);
     }
 
+    //닉네임으로 유저 조회
+    @Override
+    public UserDTO getUserByNickname(String nickname) {
+        UserEntity userEntity = userRepository.findByNickname(nickname);
+        if (userEntity == null) {
+            throw new RuntimeException("유저의 nickname이 " + nickname + "인 사용자를 찾을 수 없습니다");
+        }
+        return UserDTO.entityToDto(userEntity);
+    }
+
     //아이디 중복 확인
     @Override
     public boolean isUidDuplicate(String uid) {
@@ -169,7 +179,9 @@ public class UserServiceImpl implements UserService {
     public JWTDTO loginWithOAuth2(OAuth2User oAuth2User) {
         String uid = oAuth2User.getAttribute("id").toString();
         Map<String, Object> properties = oAuth2User.getAttribute("properties");
+        Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
         String name = properties != null ? (String) properties.get("nickname") : null;
+        String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
 
         UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
 
@@ -177,11 +189,13 @@ public class UserServiceImpl implements UserService {
             userEntity = UserEntity.builder()
                     .uid(uid)
                     .name(name)
+                    .email(email)
                     .password(passwordEncoder.encode("oauth2user"))
                     .build();
             userRepository.save(userEntity);
         } else {
             userEntity.setName(name);
+            userEntity.setEmail(email);
             userRepository.save(userEntity);
         }
 
