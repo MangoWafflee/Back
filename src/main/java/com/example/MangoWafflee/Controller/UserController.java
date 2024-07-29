@@ -142,4 +142,12 @@ public class UserController {
         UserDTO updatedUser = userService.updateNickname(uid, nickname);
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
+
+    // 카카오 로그인 성공 시 인가 코드 반환 엔드포인트 메서드
+    @PostMapping("/oauth2/code/kakao")
+    public ResponseEntity<Map<String, String>> getAccessToken(@RequestBody Map<String, String> requestBody) {
+        String code = requestBody.get("code");
+        String accessToken = userService.exchangeCodeForToken(code);
+        return ResponseEntity.ok(Map.of("accessToken", accessToken));
+    }
 }

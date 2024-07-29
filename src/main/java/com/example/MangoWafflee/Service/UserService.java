@@ -24,4 +24,5 @@ public interface UserService {
     JWTDTO loginWithOAuth2(OAuth2User oAuth2User);
     UserDTO getKakaoUserInfo(String uid);
     UserDTO addImageToUser(String uid, MultipartFile image);
+    String exchangeCodeForToken(String code);
 }

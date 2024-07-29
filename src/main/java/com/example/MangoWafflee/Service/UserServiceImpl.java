@@ -5,17 +5,26 @@ import com.example.MangoWafflee.DTO.UserDTO;
 import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Repository.UserRepository;
 import com.example.MangoWafflee.Global.Config.JWT.JwtTokenProvider;
+import com.google.api.client.util.Value;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import com.google.cloud.storage.Storage;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
+import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -30,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final Storage storage;
+    private final RestTemplate restTemplate;
 
     //회원가입
     @Override
@@ -257,5 +267,42 @@ public class UserServiceImpl implements UserService {
         }
         return UserDTO.entityToDto(userEntity);
     }
-}
 
+    // 카카오 로그인 성공 시 인가 코드 반환 엔드포인트 메서드
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String clientId;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+    private String clientSecret;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String redirectUri;
+
+    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
+    private String tokenUri;
+
+    @Override
+    public String exchangeCodeForToken(String code) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "authorization_code");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("redirect_uri", redirectUri);
+        body.add("code", code);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUri, request, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            String accessToken = (String) responseBody.get("access_token");
+            return accessToken;
+        } else {
+            throw new RuntimeException("토큰 발급 실패");
+        }
+    }
+}
