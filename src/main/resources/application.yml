@@ -34,6 +34,12 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 jwt:
   secret: ${JWT_SECRET}
   expiration: 1800000
