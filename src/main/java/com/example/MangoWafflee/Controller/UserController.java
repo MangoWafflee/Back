@@ -47,7 +47,7 @@ public class UserController {
     }
 
     //닉네임으로 유저 조회
-    @GetMapping("/nickname/{nickname}")
+    @GetMapping("/{nickname}")
     public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname) {
         UserDTO user = userService.getUserByNickname(nickname);
         return ResponseEntity.ok(user);

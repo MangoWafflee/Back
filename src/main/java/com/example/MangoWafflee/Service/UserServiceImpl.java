@@ -191,6 +191,7 @@ public class UserServiceImpl implements UserService {
                     .name(name)
                     .email(email)
                     .password(passwordEncoder.encode("oauth2user"))
+                    .provider("kakao")
                     .build();
             userRepository.save(userEntity);
         } else {

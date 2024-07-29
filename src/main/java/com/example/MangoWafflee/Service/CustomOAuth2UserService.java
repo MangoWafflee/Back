@@ -54,6 +54,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .name(name)
                     .email(email)
                     .password(passwordEncoder.encode("OAuth2_User_Password")) // 비밀번호 설정
+                    .provider(registrationId)
                     .build();
             userRepository.save(userEntity);
         }
@@ -62,4 +63,5 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new CustomOAuth2User(userEntity, oAuth2User.getAttributes());
     }
 }
+
 
