@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class FollowService {
@@ -28,6 +29,9 @@ public class FollowService {
     private UserRepository userRepository;
 
     public FollowRequest sendFollowRequest(Long senderId, Long receiverId) { // 팔로우 요청
+        if (senderId.equals(receiverId)) {
+            throw new IllegalArgumentException("자기 자신에게 팔로우 요청을 보낼 수 없습니다.");
+        }
         if (isPending(senderId, receiverId)) { // case 1. status == PENDING
             throw new RuntimeException("이미 친구 추가를 요청한 상태입니다.");
         }
@@ -101,6 +105,10 @@ public class FollowService {
     }
 
     public List<FollowRequest> getSentFollowRequests(Long senderId) {
+        if (!userRepository.existsById(senderId)) {
+            throw new IllegalArgumentException("등록된 유저가 아닙니다.");
+        }
+
         return followRequestRepository.findAllBySenderId(senderId);
     }
 }
