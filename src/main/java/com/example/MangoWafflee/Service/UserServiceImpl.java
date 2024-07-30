@@ -177,12 +177,11 @@ public class UserServiceImpl implements UserService {
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUri;
 
-    // 카카오 인가 코드로 액세스 토큰 요청
+    //카카오 인가 코드로 액세스 토큰 요청
     public String getAccessToken(String code) {
         String url = "https://kauth.kakao.com/oauth/token";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
@@ -194,17 +193,20 @@ public class UserServiceImpl implements UserService {
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             Map<String, Object> responseBody = response.getBody();
+            logger.info("Response from Kakao: {}", responseBody);
             return responseBody != null ? (String) responseBody.get("access_token") : null;
         } catch (HttpClientErrorException e) {
-            throw new RuntimeException("액세스 토큰을 가져오는 중 오류가 발생하였습니다. 오류 내용: " + e.getMessage());
+            logger.error("액세스 토큰을 가져오는 중 오류가 발생하였습니다. 오류 내용 : {}", e.getMessage());
+            logger.error("Response body : {}", e.getResponseBodyAsString());
+            throw e;
         }
     }
 
-    // 액세스 토큰으로 사용자 정보 요청
+    //액세스 토큰으로 사용자 정보 요청
     private Map<String, Object> getUserInfo(String accessToken) {
         String url = "https://kapi.kakao.com/v2/user/me";
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", accessToken);
+        headers.set("Authorization", "Bearer " + accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
@@ -216,48 +218,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    // 액세스 토큰으로 사용자 정보 요청 및 처리
-    public void processKakaoUser(String accessToken) {
-        String url = "https://kapi.kakao.com/v2/user/me";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        try {
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
-            Map<String, Object> userInfo = response.getBody();
-
-            String uid = String.valueOf(userInfo.get("id"));
-            Map<String, Object> properties = (Map<String, Object>) userInfo.get("properties");
-            Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
-
-            String nickname = (String) properties.get("nickname");
-            String email = (String) kakaoAccount.get("email");
-
-            UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
-
-            if (userEntity == null) {
-                userEntity = UserEntity.builder()
-                        .uid(uid)
-                        .name(nickname)
-                        .email(email)
-                        .nickname(nickname)
-                        .password(passwordEncoder.encode("oauth2user"))
-                        .provider("kakao")
-                        .build();
-                userRepository.save(userEntity);
-            } else {
-                userEntity.setName(nickname);
-                userEntity.setEmail(email);
-                userEntity.setNickname(nickname);
-                userRepository.save(userEntity);
-            }
-        } catch (HttpClientErrorException e) {
-            throw new RuntimeException("사용자 정보를 가져오는 중 오류가 발생하였습니다. 오류 내용: " + e.getMessage());
-        }
-    }
-
-    // 카카오 로그인 처리
+    //카카오 로그인 처리
     @Override
     public JWTDTO loginWithOAuth2(String code) {
         try {
@@ -299,7 +260,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    // 카카오 로그인 유저 정보 조회
+    //카카오 로그인 유저 정보 조회
     @Override
     public UserDTO getKakaoUserInfo(String uid) {
         UserEntity userEntity = userRepository.findByUid(uid)

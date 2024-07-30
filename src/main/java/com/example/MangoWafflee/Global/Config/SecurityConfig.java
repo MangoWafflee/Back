@@ -2,6 +2,7 @@ package com.example.MangoWafflee.Global.Config;
 
 import com.example.MangoWafflee.Service.CustomOAuth2UserService;
 import com.example.MangoWafflee.Repository.UserRepository;
+import com.example.MangoWafflee.Global.Config.JWT.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,20 +14,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import com.example.MangoWafflee.Global.Config.JWT.JwtAuthenticationFilter;
-import com.example.MangoWafflee.Service.UserDetailsServiceImpl;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserRepository userRepository;
+    private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserRepository userRepository) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserRepository userRepository, CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userRepository = userRepository;
+        this.customOAuth2LoginSuccessHandler = customOAuth2LoginSuccessHandler;
     }
 
     @Bean
@@ -47,7 +52,6 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers("/", "/login**", "/oauth2/**", "/login", "/loginFailure", "/error", "/user/login").permitAll()  // 일반 로그인 허용
                                 .requestMatchers("/user/kakao/**").authenticated()  // 카카오 유저 정보 조회 경로 보호
-//                                .anyRequest().authenticated()  // 그 외 모든 요청에 대해 인증 요구
                                 .anyRequest().permitAll() // 모든 요청 허용
                 )
                 .sessionManagement(sessionManagement ->
@@ -56,11 +60,12 @@ public class SecurityConfig {
                 .oauth2Login(oauth2Login ->
                         oauth2Login
                                 .loginPage("/login")
-                                .defaultSuccessUrl("/user/oauth2/code/kakao", true)
+                                .defaultSuccessUrl("/", true)
                                 .failureUrl("/loginFailure")
                                 .userInfoEndpoint(userInfoEndpoint ->
                                         userInfoEndpoint.userService(customOAuth2UserService())
                                 )
+                                .successHandler(customOAuth2LoginSuccessHandler)
                 )
                 .formLogin(formLogin -> formLogin.disable());  // 폼 로그인 비활성화
 

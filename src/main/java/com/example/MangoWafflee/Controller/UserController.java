@@ -114,7 +114,7 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    // 카카오 로그인 성공 시 호출되는 엔드포인트
+    // 카카오 로그인 성공 시 호출되는 엔드포인트 (GET)
     @GetMapping("/callback")
     public ResponseEntity<JWTDTO> kakaoCallback(@RequestParam String code) {
         JWTDTO jwtDto = userService.loginWithOAuth2(code);
@@ -126,15 +126,6 @@ public class UserController {
     public ResponseEntity<JWTDTO> kakaoLoginPost(@RequestBody OAuth2CodeDTO codeDTO) {
         JWTDTO jwtDto = userService.loginWithOAuth2(codeDTO.getCode());
         return ResponseEntity.ok(jwtDto);
-    }
-
-    //인가 코드를 받아 액세스 토큰을 요청, 액세스 토큰을 사용해 사용자 정보를 가져와 처리
-    @PostMapping("/code/kakao")
-    public ResponseEntity<String> getAuthorizationCode(@RequestBody Map<String, String> requestBody) {
-        String code = requestBody.get("code");
-        String accessToken = userService.getAccessToken(code);
-        userService.processKakaoUser(accessToken);
-        return ResponseEntity.ok("로그인 성공! 인가 코드: " + code);
     }
 
     // 카카오 로그인 유저 정보 조회

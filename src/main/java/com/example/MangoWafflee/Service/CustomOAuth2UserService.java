@@ -3,6 +3,8 @@ package com.example.MangoWafflee.Service;
 import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -13,15 +15,13 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomOAuth2UserService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public CustomOAuth2UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
@@ -38,6 +38,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String name = properties != null ? (String) properties.get("nickname") : null;
         String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+
+        // 사용자 정보를 로그에 기록
+        logger.info("OAuth2 Login Successful - ID: {}, Name: {}, Email: {}", id, name, email);
 
         // 사용자가 이미 존재하는지 확인
         Optional<UserEntity> userEntityOptional = userRepository.findByUid(String.valueOf(id));
@@ -63,5 +66,3 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new CustomOAuth2User(userEntity, oAuth2User.getAttributes());
     }
 }
-
-

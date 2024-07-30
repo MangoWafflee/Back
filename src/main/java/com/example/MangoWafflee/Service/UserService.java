@@ -21,7 +21,6 @@ public interface UserService {
     JWTDTO getUserWithTokenInfo(String uid, String token);
     UserDTO updateNickname(String uid, String nickname);
     String getAccessToken(String code);
-    void processKakaoUser(String accessToken);
     JWTDTO loginWithOAuth2(String code);
     UserDTO getKakaoUserInfo(String uid);
     UserDTO addImageToUser(String uid, MultipartFile image);
