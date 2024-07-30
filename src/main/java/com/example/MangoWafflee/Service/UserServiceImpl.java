@@ -9,10 +9,7 @@ import com.google.api.client.util.Value;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -20,11 +17,11 @@ import org.springframework.stereotype.Service;
 import com.google.cloud.storage.Storage;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
-import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -171,48 +168,135 @@ public class UserServiceImpl implements UserService {
         return new JWTDTO(token, UserDTO.entityToDto(userEntity), remainingTime);
     }
 
-    //닉네임 수정
-    @Override
-    public UserDTO updateNickname(String uid, String nickname) {
-        UserEntity userEntity = userRepository.findByUid(uid)
-                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String clientId;
 
-        userEntity.setNickname(nickname);
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+    private String clientSecret;
 
-        UserEntity updatedUser = userRepository.save(userEntity);
-        logger.info("사용자 닉네임 업데이트 완료! " + updatedUser);
-        return UserDTO.entityToDto(updatedUser);
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String redirectUri;
+
+    // 카카오 인가 코드로 액세스 토큰 요청
+    public String getAccessToken(String code) {
+        String url = "https://kauth.kakao.com/oauth/token";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", clientId);
+        params.add("redirect_uri", redirectUri);
+        params.add("code", code);
+        params.add("client_secret", clientSecret);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            return responseBody != null ? (String) responseBody.get("access_token") : null;
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("액세스 토큰을 가져오는 중 오류가 발생하였습니다. 오류 내용: " + e.getMessage());
+        }
     }
 
-    //카카오 로그인 성공 시 호출되는 메서드
-    @Override
-    public JWTDTO loginWithOAuth2(OAuth2User oAuth2User) {
-        String uid = oAuth2User.getAttribute("id").toString();
-        Map<String, Object> properties = oAuth2User.getAttribute("properties");
-        Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
-        String name = properties != null ? (String) properties.get("nickname") : null;
-        String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
-
-        UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
-
-        if (userEntity == null) {
-            userEntity = UserEntity.builder()
-                    .uid(uid)
-                    .name(name)
-                    .email(email)
-                    .password(passwordEncoder.encode("oauth2user"))
-                    .provider("kakao")
-                    .build();
-            userRepository.save(userEntity);
-        } else {
-            userEntity.setName(name);
-            userEntity.setEmail(email);
-            userRepository.save(userEntity);
+    // 액세스 토큰으로 사용자 정보 요청
+    private Map<String, Object> getUserInfo(String accessToken) {
+        String url = "https://kapi.kakao.com/v2/user/me";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            logger.error("사용자 정보 가져오는 중 오류가 발생했습니다. 오류 내용 : " + e.getMessage());
+            logger.error("Response body : {}", e.getResponseBodyAsString());
+            throw e;
         }
+    }
 
-        String token = jwtTokenProvider.generateToken(uid);
-        logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
-        return new JWTDTO(token, UserDTO.entityToDto(userEntity));
+    // 액세스 토큰으로 사용자 정보 요청 및 처리
+    public void processKakaoUser(String accessToken) {
+        String url = "https://kapi.kakao.com/v2/user/me";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+            Map<String, Object> userInfo = response.getBody();
+
+            String uid = String.valueOf(userInfo.get("id"));
+            Map<String, Object> properties = (Map<String, Object>) userInfo.get("properties");
+            Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
+
+            String nickname = (String) properties.get("nickname");
+            String email = (String) kakaoAccount.get("email");
+
+            UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
+
+            if (userEntity == null) {
+                userEntity = UserEntity.builder()
+                        .uid(uid)
+                        .name(nickname)
+                        .email(email)
+                        .nickname(nickname)
+                        .password(passwordEncoder.encode("oauth2user"))
+                        .provider("kakao")
+                        .build();
+                userRepository.save(userEntity);
+            } else {
+                userEntity.setName(nickname);
+                userEntity.setEmail(email);
+                userEntity.setNickname(nickname);
+                userRepository.save(userEntity);
+            }
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("사용자 정보를 가져오는 중 오류가 발생하였습니다. 오류 내용: " + e.getMessage());
+        }
+    }
+
+    // 카카오 로그인 처리
+    @Override
+    public JWTDTO loginWithOAuth2(String code) {
+        try {
+            String accessToken = getAccessToken(code);
+            Map<String, Object> userInfo = getUserInfo(accessToken);
+
+            String uid = String.valueOf(userInfo.get("id"));
+            Map<String, Object> properties = (Map<String, Object>) userInfo.get("properties");
+            Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
+
+            String nickname = (String) properties.get("nickname");
+            String email = (String) kakaoAccount.get("email");
+
+            UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
+
+            if (userEntity == null) {
+                userEntity = UserEntity.builder()
+                        .uid(uid)
+                        .name(nickname)
+                        .email(email)
+                        .nickname(nickname)
+                        .password(passwordEncoder.encode("oauth2user"))
+                        .provider("kakao")
+                        .build();
+                userRepository.save(userEntity);
+            } else {
+                userEntity.setName(nickname);
+                userEntity.setEmail(email);
+                userEntity.setNickname(nickname);
+                userRepository.save(userEntity);
+            }
+
+            String token = jwtTokenProvider.generateToken(uid);
+            logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
+            return new JWTDTO(token, UserDTO.entityToDto(userEntity));
+        } catch (Exception e) {
+            logger.error("카카오 로그인 중 오류가 발생했습니다: {}", e.getMessage());
+            throw new RuntimeException("카카오 로그인 중 오류가 발생했습니다", e);
+        }
     }
 
     // 카카오 로그인 유저 정보 조회
@@ -223,7 +307,7 @@ public class UserServiceImpl implements UserService {
         return UserDTO.entityToDto(userEntity);
     }
 
-    //카카오 유저 프로필 이미지 등록
+    //카카오 유저 프로필 이미지 설정
     @Override
     public UserDTO addImageToUser(String uid, MultipartFile image) {
         UserEntity userEntity = userRepository.findByUid(uid)
@@ -268,42 +352,17 @@ public class UserServiceImpl implements UserService {
         return UserDTO.entityToDto(userEntity);
     }
 
-    // 카카오 로그인 성공 시 인가 코드 반환 엔드포인트 메서드
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String clientId;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-    private String clientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String redirectUri;
-
-    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
-    private String tokenUri;
-
+    //카카오 유저 닉네임 설정
     @Override
-    public String exchangeCodeForToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    public UserDTO updateNickname(String uid, String nickname) {
+        UserEntity userEntity = userRepository.findByUid(uid)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("redirect_uri", redirectUri);
-        body.add("code", code);
+        userEntity.setNickname(nickname);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUri, request, Map.class);
-
-        if (response.getStatusCode() == HttpStatus.OK) {
-            Map<String, Object> responseBody = response.getBody();
-            String accessToken = (String) responseBody.get("access_token");
-            return accessToken;
-        } else {
-            throw new RuntimeException("토큰 발급 실패");
-        }
+        UserEntity updatedUser = userRepository.save(userEntity);
+        logger.info("사용자 닉네임 업데이트 완료! " + updatedUser);
+        return UserDTO.entityToDto(updatedUser);
     }
 
     @Override

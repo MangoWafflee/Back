@@ -1,6 +1,7 @@
 package com.example.MangoWafflee.Controller;
 
 import com.example.MangoWafflee.DTO.JWTDTO;
+import com.example.MangoWafflee.DTO.OAuth2CodeDTO;
 import com.example.MangoWafflee.DTO.UserDTO;
 import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Service.UserService;
@@ -113,10 +114,27 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    //카카오 로그인 성공 시 호출되는 메서드
-    @GetMapping("/loginSuccess")
-    public JWTDTO loginSuccess(OAuth2User oAuth2User) {
-        return userService.loginWithOAuth2(oAuth2User);
+    // 카카오 로그인 성공 시 호출되는 엔드포인트
+    @GetMapping("/callback")
+    public ResponseEntity<JWTDTO> kakaoCallback(@RequestParam String code) {
+        JWTDTO jwtDto = userService.loginWithOAuth2(code);
+        return ResponseEntity.ok(jwtDto);
+    }
+
+    // 카카오 로그인 성공 시 호출되는 엔드포인트 (POST)
+    @PostMapping("/callback")
+    public ResponseEntity<JWTDTO> kakaoLoginPost(@RequestBody OAuth2CodeDTO codeDTO) {
+        JWTDTO jwtDto = userService.loginWithOAuth2(codeDTO.getCode());
+        return ResponseEntity.ok(jwtDto);
+    }
+
+    //인가 코드를 받아 액세스 토큰을 요청, 액세스 토큰을 사용해 사용자 정보를 가져와 처리
+    @PostMapping("/code/kakao")
+    public ResponseEntity<String> getAuthorizationCode(@RequestBody Map<String, String> requestBody) {
+        String code = requestBody.get("code");
+        String accessToken = userService.getAccessToken(code);
+        userService.processKakaoUser(accessToken);
+        return ResponseEntity.ok("로그인 성공! 인가 코드: " + code);
     }
 
     // 카카오 로그인 유저 정보 조회
@@ -126,7 +144,7 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    //카카오 유저 프로필 이미지 등록
+    //카카오 유저 프로필 이미지 설정
     @SneakyThrows
     @PostMapping(value = "/image", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image) {
@@ -142,14 +160,6 @@ public class UserController {
         String nickname = request.get("nickname");
         UserDTO updatedUser = userService.updateNickname(uid, nickname);
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-    }
-
-    // 카카오 로그인 성공 시 인가 코드 반환 엔드포인트 메서드
-    @PostMapping("/oauth2/code/kakao")
-    public ResponseEntity<Map<String, String>> getAccessToken(@RequestBody Map<String, String> requestBody) {
-        String code = requestBody.get("code");
-        String accessToken = userService.exchangeCodeForToken(code);
-        return ResponseEntity.ok(Map.of("accessToken", accessToken));
     }
 
     @GetMapping("/entry")
