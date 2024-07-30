@@ -2,6 +2,7 @@ package com.example.MangoWafflee.Controller;
 
 import com.example.MangoWafflee.DTO.JWTDTO;
 import com.example.MangoWafflee.DTO.UserDTO;
+import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -149,5 +150,16 @@ public class UserController {
         String code = requestBody.get("code");
         String accessToken = userService.exchangeCodeForToken(code);
         return ResponseEntity.ok(Map.of("accessToken", accessToken));
+    }
+
+    @GetMapping("/entry")
+    public ResponseEntity<UserDTO> getUserEntry(@RequestParam Long userId) {
+        UserDTO userDTO = userService.getUserById(userId);
+
+        if (userDTO == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(userDTO);
     }
 }

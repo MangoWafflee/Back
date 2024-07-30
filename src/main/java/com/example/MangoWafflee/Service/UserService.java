@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
@@ -25,4 +24,5 @@ public interface UserService {
     UserDTO getKakaoUserInfo(String uid);
     UserDTO addImageToUser(String uid, MultipartFile image);
     String exchangeCodeForToken(String code);
+    UserDTO getUserById(Long userId);
 }

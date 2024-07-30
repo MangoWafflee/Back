@@ -305,4 +305,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("토큰 발급 실패");
         }
     }
+
+    @Override
+    public UserDTO getUserById(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저의 id가 " + userId + "인 사용자를 찾을 수 없습니다"));
+        return UserDTO.entityToDto(userEntity);
+    }
 }
