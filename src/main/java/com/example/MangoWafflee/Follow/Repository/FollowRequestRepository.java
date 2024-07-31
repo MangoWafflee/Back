@@ -1,6 +1,5 @@
 package com.example.MangoWafflee.Follow.Repository;
 
-import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Follow.Entity.FollowRequest;
 import com.example.MangoWafflee.Follow.Entity.FollowRequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +17,7 @@ public interface FollowRequestRepository extends JpaRepository<FollowRequest, Lo
 
     @Query("SELECT fr FROM FollowRequest fr WHERE fr.sender.id = :senderId")
     List<FollowRequest> findAllBySenderId(@Param("senderId") Long senderId);
+
+    @Query("SELECT fr FROM FollowRequest fr WHERE fr.receiver.id=:receiverId")
+    List<FollowRequest> findByReceiverId(@Param("receiverId") Long receiverId);
 }

@@ -4,6 +4,7 @@ import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Follow.DTO.FollowRequestDTO;
 import com.example.MangoWafflee.Follow.DTO.FollowResponseDTO;
 import com.example.MangoWafflee.Follow.Entity.FollowRequest;
+import com.example.MangoWafflee.Follow.Repository.FollowRequestRepository;
 import com.example.MangoWafflee.Follow.Service.FollowService;
 import com.example.MangoWafflee.Follow.Service.FriendshipService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class FollowController {
     @Autowired
     private FriendshipService friendshipService;
 
+    @Autowired
+    private FollowRequestRepository followRequestRepository;
+
     @PostMapping("/request")
     public ResponseEntity<?> sendFollowRequest(@RequestBody FollowRequestDTO followRequestDTO) {
         try {
@@ -34,6 +38,11 @@ public class FollowController {
         }
     }
 
+    @GetMapping("/received")
+    public List<FollowRequest> getReceivedFollowRequests(@RequestParam Long userId) {
+        return followRequestRepository.findByReceiverId(userId);
+    }
+
     @PostMapping("/response")
     public ResponseEntity<?> respondToRequest(@RequestBody FollowResponseDTO followResponseDTO) {
         return followService.respondToRequest(followResponseDTO.getRequestId(), followResponseDTO.getStatus());
@@ -43,6 +52,10 @@ public class FollowController {
     public ResponseEntity<?> findRequestId(@PathVariable Long senderId) {
         try {
             List<FollowRequest> sentRequests = followService.getSentFollowRequests(senderId);
+
+            if (sentRequests == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("친구 추가 요청 내역을 찾을 수 없습니다.");
+            }
 
             if (sentRequests.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body("친구 추가 요청 내역이 비어있습니다.");
