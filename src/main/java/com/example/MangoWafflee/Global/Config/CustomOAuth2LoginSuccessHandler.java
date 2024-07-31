@@ -36,16 +36,14 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        // 디버깅을 위한 추가 정보 로그
         logger.info("인증 성공!");
         logger.info("인증 세부 정보 : {}", authentication.getDetails());
         logger.info("주요 내용 : {}", authentication.getPrincipal());
 
-        // 인가 코드 로깅
         String code = request.getParameter("code");
         logger.info("인가 코드 : {}", code);
+        logger.info("리다이렉트 URI : {}", redirectUri);
 
-        // 토큰 발급 요청 로직 호출
         if (code != null) {
             String tokenEndpoint = "https://kauth.kakao.com/oauth/token";
 
@@ -60,6 +58,8 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             params.add("redirect_uri", redirectUri);
             params.add("code", code);
 
+            logger.info("토큰 요청 파라미터 (위치 : CustomOAuth2LoginSuccessHandler) : {}", params);
+
             HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
 
             try {
@@ -67,13 +67,17 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
                 logger.info("액세스 토큰 응답 : {}", responseEntity.getBody());
             } catch (HttpClientErrorException e) {
                 logger.error("토큰 발급 중 클라이언트 오류 발생 (위치 : CustomOAuth2LoginSuccessHandler) : 상태 코드 = {}, 응답 본문 = {}", e.getStatusCode(), e.getResponseBodyAsString());
-                logger.error("에러 상세 정보 (위치 : CustomOAuth2LoginSuccessHandler) : ", e);
+                logger.error("에러 상세 정보 : ", e);
+                response.sendRedirect("/loginFailure");
             } catch (Exception e) {
                 logger.error("토큰 발급 중 오류 발생 (위치 : CustomOAuth2LoginSuccessHandler)", e);
+                response.sendRedirect("/loginFailure");
             }
+        } else {
+            logger.error("인가 코드가 존재하지 않습니다.");
+            response.sendRedirect("/loginFailure");
         }
 
-        // 기본 성공 URL로 리다이렉트
         response.sendRedirect("/");
     }
 }

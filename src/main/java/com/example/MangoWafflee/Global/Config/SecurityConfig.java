@@ -27,11 +27,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserRepository userRepository;
     private final CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler;
+    private final CustomOAuth2LoginFailureHandler customOAuth2LoginFailureHandler;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserRepository userRepository, CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserRepository userRepository, CustomOAuth2LoginSuccessHandler customOAuth2LoginSuccessHandler, CustomOAuth2LoginFailureHandler customOAuth2LoginFailureHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userRepository = userRepository;
         this.customOAuth2LoginSuccessHandler = customOAuth2LoginSuccessHandler;
+        this.customOAuth2LoginFailureHandler = customOAuth2LoginFailureHandler;
     }
 
     @Bean
@@ -61,7 +63,7 @@ public class SecurityConfig {
                         oauth2Login
                                 .loginPage("/login")
                                 .defaultSuccessUrl("/", true)
-                                .failureUrl("/loginFailure")
+                                .failureHandler(customOAuth2LoginFailureHandler) // 로그인 실패 핸들러 설정
                                 .userInfoEndpoint(userInfoEndpoint ->
                                         userInfoEndpoint.userService(customOAuth2UserService())
                                 )
