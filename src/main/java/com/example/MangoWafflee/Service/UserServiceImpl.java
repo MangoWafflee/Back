@@ -176,7 +176,7 @@ public class UserServiceImpl implements UserService {
         logger.info("Kakao OAuth 설정 값 - clientId : {}, clientSecret : {}, redirectUri : {}", kakaoOAuthProperties.getClientId(), kakaoOAuthProperties.getClientSecret(), kakaoOAuthProperties.getRedirectUri());
     }
 
-    // 카카오 인가 코드로 액세스 토큰 요청
+    //카카오 인가 코드로 액세스 토큰 요청
     public String getAccessToken(String code) {
         String url = "https://kauth.kakao.com/oauth/token";
         HttpHeaders headers = new HttpHeaders();
@@ -211,7 +211,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    // 액세스 토큰으로 사용자 정보 요청
+    //액세스 토큰으로 사용자 정보 요청
     public Map<String, Object> getUserInfo(String accessToken) {
         String url = "https://kapi.kakao.com/v2/user/me";
         HttpHeaders headers = new HttpHeaders();
@@ -287,16 +287,10 @@ public class UserServiceImpl implements UserService {
 
     //카카오 유저 프로필 이미지 설정
     @Override
-    public UserDTO addImageToUser(String uid, MultipartFile image, String token) {
-        // 토큰 검증
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new RuntimeException("유효하지 않은 토큰입니다.");
-        }
-
-        // 토큰에서 사용자 정보 추출
-        String tokenUid = jwtTokenProvider.getUidFromToken(token);
-        if (!tokenUid.equals(uid)) {
-            throw new RuntimeException("토큰이 사용자와 일치하지 않습니다.");
+    public UserDTO addImageToUser(String uid, MultipartFile image, UserDetails userDetails) {
+        // 사용자 인증
+        if (!userDetails.getUsername().equals(uid)) {
+            throw new RuntimeException("권한이 없습니다.");
         }
 
         UserEntity userEntity = userRepository.findByUid(uid)
@@ -331,10 +325,6 @@ public class UserServiceImpl implements UserService {
                 storage.create(blobInfo, image.getBytes());
                 String imageUrl = "https://storage.cloud.google.com/mangowafflee/" + fileName;
                 userEntity.setImage(imageUrl);
-                // 기존 닉네임 유지
-                if (userEntity.getNickname() == null) {
-                    userEntity.setNickname(userEntity.getNickname());
-                }
                 userRepository.save(userEntity);
                 logger.info("사용자 프로필 이미지 업데이트 완료! " + userEntity);
             } catch (IOException e) {
@@ -348,16 +338,10 @@ public class UserServiceImpl implements UserService {
 
     //카카오 유저 닉네임 설정
     @Override
-    public UserDTO updateNickname(String uid, String nickname, String token) {
-        // 토큰 검증
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new RuntimeException("유효하지 않은 토큰입니다.");
-        }
-
-        // 토큰에서 사용자 정보 추출
-        String tokenUid = jwtTokenProvider.getUidFromToken(token);
-        if (!tokenUid.equals(uid)) {
-            throw new RuntimeException("토큰이 사용자와 일치하지 않습니다.");
+    public UserDTO updateNickname(String uid, String nickname, UserDetails userDetails) {
+        // 사용자 인증
+        if (!userDetails.getUsername().equals(uid)) {
+            throw new RuntimeException("권한이 없습니다.");
         }
 
         UserEntity userEntity = userRepository.findByUid(uid)
@@ -369,6 +353,7 @@ public class UserServiceImpl implements UserService {
         logger.info("사용자 닉네임 업데이트 완료! " + updatedUser);
         return UserDTO.entityToDto(updatedUser);
     }
+
 
 
     @Override

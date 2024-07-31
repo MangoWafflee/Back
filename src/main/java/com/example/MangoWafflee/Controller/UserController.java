@@ -83,7 +83,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // 토큰 유효 시간 확인
+    //토큰 유효 시간 확인
     @GetMapping("/token-remaining-time")
     public ResponseEntity<Long> getTokenRemainingTime(@AuthenticationPrincipal UserDetails userDetails) {
         Long remainingTime = userService.getTokenRemainingTime(userDetails);
@@ -107,47 +107,42 @@ public class UserController {
         return ResponseEntity.ok(userWithTokenInfo);
     }
 
-    // 카카오 로그인 성공 시 호출되는 엔드포인트 (GET)
+    //카카오 로그인 성공 시 호출되는 엔드포인트 (GET)
     @GetMapping("/oauth2/code/kakao")
     public ResponseEntity<JWTDTO> kakaoCallback(@RequestParam String code) {
         JWTDTO jwtDto = userService.loginWithOAuth2(code);
         return ResponseEntity.ok(jwtDto);
     }
 
-    // 카카오 로그인 성공 시 호출되는 엔드포인트 (POST)
+    //카카오 로그인 성공 시 호출되는 엔드포인트 (POST)
     @PostMapping("/oauth2/code/kakao")
     public ResponseEntity<JWTDTO> kakaoLoginPost(@RequestBody OAuth2CodeDTO codeDTO) {
         JWTDTO jwtDto = userService.loginWithOAuth2(codeDTO.getCode());
         return ResponseEntity.ok(jwtDto);
     }
 
-    // 카카오 로그인 유저 정보 조회
+    //카카오 로그인 유저 정보 조회
     @GetMapping("/kakao/{uid}")
     public ResponseEntity<UserDTO> getKakaoUserInfo(@PathVariable String uid) {
         UserDTO user = userService.getKakaoUserInfo(uid);
         return ResponseEntity.ok(user);
     }
 
-    // 카카오 유저 프로필 이미지 설정
+    //카카오 유저 프로필 이미지 설정
     @SneakyThrows
     @PostMapping(value = "/image", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal UserDetails userDetails) {
         ObjectMapper mapper = new ObjectMapper();
         UserDTO userDTO = mapper.readValue(userData, UserDTO.class);
-        // 토큰에서 "Bearer" 접두사 제거
-        String actualToken = token.replace("Bearer ", "");
-        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image, actualToken);
+        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
     }
 
     //카카오 유저 닉네임 설정
     @PostMapping("/nickname/{uid}")
-    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request, @AuthenticationPrincipal UserDetails userDetails) {
         String nickname = request.get("nickname");
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-        UserDTO updatedUser = userService.updateNickname(uid, nickname, token);
+        UserDTO updatedUser = userService.updateNickname(uid, nickname, userDetails);
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 
