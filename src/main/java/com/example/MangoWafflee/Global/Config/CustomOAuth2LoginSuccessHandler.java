@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -64,10 +65,11 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             try {
                 ResponseEntity<String> responseEntity = restTemplate.exchange(tokenEndpoint, HttpMethod.POST, requestEntity, String.class);
                 logger.info("액세스 토큰 응답 : {}", responseEntity.getBody());
-
-                // 토큰 발급 성공 후 처리 로직 (예: 토큰 저장 또는 세션 설정)
+            } catch (HttpClientErrorException e) {
+                logger.error("토큰 발급 중 클라이언트 오류 발생 (위치 : CustomOAuth2LoginSuccessHandler) : 상태 코드 = {}, 응답 본문 = {}", e.getStatusCode(), e.getResponseBodyAsString());
+                logger.error("에러 상세 정보 (위치 : CustomOAuth2LoginSuccessHandler) : ", e);
             } catch (Exception e) {
-                logger.error("토큰 발급 중 오류 발생 : {}", e.getMessage());
+                logger.error("토큰 발급 중 오류 발생 (위치 : CustomOAuth2LoginSuccessHandler)", e);
             }
         }
 

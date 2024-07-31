@@ -196,8 +196,8 @@ public class UserServiceImpl implements UserService {
             logger.info("Response from Kakao: {}", responseBody);
             return responseBody != null ? (String) responseBody.get("access_token") : null;
         } catch (HttpClientErrorException e) {
-            logger.error("액세스 토큰을 가져오는 중 오류가 발생하였습니다. 오류 내용 : {}", e.getMessage());
-            logger.error("Response body : {}", e.getResponseBodyAsString());
+            logger.error("액세스 토큰을 가져오는 중 오류가 발생하였습니다. (위치 : getAccessToken) : {}", e.getMessage());
+            logger.error("Response body, (위치 : getAccessToken) : {}", e.getResponseBodyAsString());
             throw e;
         }
     }
@@ -212,8 +212,8 @@ public class UserServiceImpl implements UserService {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             return response.getBody();
         } catch (HttpClientErrorException e) {
-            logger.error("사용자 정보 가져오는 중 오류가 발생했습니다. 오류 내용 : " + e.getMessage());
-            logger.error("Response body : {}", e.getResponseBodyAsString());
+            logger.error("사용자 정보 가져오는 중 오류가 발생했습니다. (위치 : getUserInfo) : " + e.getMessage());
+            logger.error("Response body, (위치 : getUserInfo) : {}", e.getResponseBodyAsString());
             throw e;
         }
     }
@@ -255,8 +255,8 @@ public class UserServiceImpl implements UserService {
             logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
             return new JWTDTO(token, UserDTO.entityToDto(userEntity));
         } catch (Exception e) {
-            logger.error("카카오 로그인 중 오류가 발생했습니다: {}", e.getMessage());
-            throw new RuntimeException("카카오 로그인 중 오류가 발생했습니다", e);
+            logger.error("카카오 로그인 중 오류가 발생했습니다 (위치 : loginWithOAuth2) : {}", e.getMessage());
+            throw new RuntimeException("카카오 로그인 중 오류가 발생했습니다. (위치 : loginWithOAuth2)", e);
         }
     }
 
