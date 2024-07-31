@@ -51,10 +51,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         UserEntity userEntity;
         if (userEntityOptional.isPresent()) {
             userEntity = userEntityOptional.get();
-            // 이름 및 이메일 업데이트
+            // 이름 및 이메일 업데이트, 닉네임은 null이 아니면 업데이트
             userEntity.setName(name);
             userEntity.setEmail(email);
-            userEntity.setNickname(nickname);
+            if (nickname != null) {
+                userEntity.setNickname(nickname);
+            }
         } else {
             // 존재하지 않으면 새로 생성
             userEntity = UserEntity.builder()

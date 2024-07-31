@@ -287,7 +287,18 @@ public class UserServiceImpl implements UserService {
 
     //카카오 유저 프로필 이미지 설정
     @Override
-    public UserDTO addImageToUser(String uid, MultipartFile image) {
+    public UserDTO addImageToUser(String uid, MultipartFile image, String token) {
+        // 토큰 검증
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new RuntimeException("유효하지 않은 토큰입니다.");
+        }
+
+        // 토큰에서 사용자 정보 추출
+        String tokenUid = jwtTokenProvider.getUidFromToken(token);
+        if (!tokenUid.equals(uid)) {
+            throw new RuntimeException("토큰이 사용자와 일치하지 않습니다.");
+        }
+
         UserEntity userEntity = userRepository.findByUid(uid)
                 .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
 
@@ -320,7 +331,12 @@ public class UserServiceImpl implements UserService {
                 storage.create(blobInfo, image.getBytes());
                 String imageUrl = "https://storage.cloud.google.com/mangowafflee/" + fileName;
                 userEntity.setImage(imageUrl);
+                // 기존 닉네임 유지
+                if (userEntity.getNickname() == null) {
+                    userEntity.setNickname(userEntity.getNickname());
+                }
                 userRepository.save(userEntity);
+                logger.info("사용자 프로필 이미지 업데이트 완료! " + userEntity);
             } catch (IOException e) {
                 throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.", e);
             }
@@ -332,7 +348,18 @@ public class UserServiceImpl implements UserService {
 
     //카카오 유저 닉네임 설정
     @Override
-    public UserDTO updateNickname(String uid, String nickname) {
+    public UserDTO updateNickname(String uid, String nickname, String token) {
+        // 토큰 검증
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new RuntimeException("유효하지 않은 토큰입니다.");
+        }
+
+        // 토큰에서 사용자 정보 추출
+        String tokenUid = jwtTokenProvider.getUidFromToken(token);
+        if (!tokenUid.equals(uid)) {
+            throw new RuntimeException("토큰이 사용자와 일치하지 않습니다.");
+        }
+
         UserEntity userEntity = userRepository.findByUid(uid)
                 .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
 
@@ -342,6 +369,7 @@ public class UserServiceImpl implements UserService {
         logger.info("사용자 닉네임 업데이트 완료! " + updatedUser);
         return UserDTO.entityToDto(updatedUser);
     }
+
 
     @Override
     public UserDTO getUserById(Long userId) {

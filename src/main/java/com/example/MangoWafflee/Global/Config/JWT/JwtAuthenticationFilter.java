@@ -1,7 +1,6 @@
 package com.example.MangoWafflee.Global.Config.JWT;
 
 import com.example.MangoWafflee.Service.UserDetailsServiceImpl;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,17 +33,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         String uid = null;
 
-        if (header != null) {
-            if (header.startsWith("Bearer ")) {
-                token = header.substring(7);
-            } else {
-                token = header;
+        if (header != null && header.startsWith("Bearer ")) {
+            token = header.substring(7);
+            try {
+                uid = jwtTokenProvider.getUidFromToken(token);
+            } catch (Exception e) {
+                logger.error("토큰에서 사용자 ID를 추출하는 중 오류 발생", e);
             }
-            uid = jwtTokenProvider.getUidFromToken(token);
         }
 
         if (uid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtTokenProvider.validateToken(token, uid)) {
+            if (jwtTokenProvider.validateToken(token)) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(uid);
                 if (userDetails != null) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -60,4 +59,3 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
-

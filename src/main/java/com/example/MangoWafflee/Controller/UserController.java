@@ -107,13 +107,6 @@ public class UserController {
         return ResponseEntity.ok(userWithTokenInfo);
     }
 
-    //닉네임 수정
-    @PutMapping("/nickname/{uid}")
-    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody String nickname) {
-        UserDTO updatedUser = userService.updateNickname(uid, nickname);
-        return ResponseEntity.ok(updatedUser);
-    }
-
     // 카카오 로그인 성공 시 호출되는 엔드포인트 (GET)
     @GetMapping("/oauth2/code/kakao")
     public ResponseEntity<JWTDTO> kakaoCallback(@RequestParam String code) {
@@ -135,21 +128,26 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    //카카오 유저 프로필 이미지 설정
+    // 카카오 유저 프로필 이미지 설정
     @SneakyThrows
     @PostMapping(value = "/image", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image) {
+    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image, @RequestHeader("Authorization") String token) {
         ObjectMapper mapper = new ObjectMapper();
         UserDTO userDTO = mapper.readValue(userData, UserDTO.class);
-        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image);
+        // 토큰에서 "Bearer" 접두사 제거
+        String actualToken = token.replace("Bearer ", "");
+        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image, actualToken);
         return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
     }
 
     //카카오 유저 닉네임 설정
     @PostMapping("/nickname/{uid}")
-    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request) {
+    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request, @RequestHeader("Authorization") String token) {
         String nickname = request.get("nickname");
-        UserDTO updatedUser = userService.updateNickname(uid, nickname);
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        UserDTO updatedUser = userService.updateNickname(uid, nickname, token);
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
     }
 

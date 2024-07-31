@@ -19,10 +19,10 @@ public interface UserService {
     Long refreshToken(UserDetails userDetails);
     Long getTokenRemainingTime(UserDetails userDetails);
     JWTDTO getUserWithTokenInfo(String uid, String token);
-    UserDTO updateNickname(String uid, String nickname);
+    UserDTO updateNickname(String uid, String nickname, String token);
     String getAccessToken(String code);
     JWTDTO loginWithOAuth2(String code);
     UserDTO getKakaoUserInfo(String uid);
-    UserDTO addImageToUser(String uid, MultipartFile image);
+    UserDTO addImageToUser(String uid, MultipartFile image, String token);
     UserDTO getUserById(Long userId);
 }
