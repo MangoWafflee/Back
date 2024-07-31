@@ -102,7 +102,8 @@ public class UserServiceImpl implements UserService {
 
     //회원 정보 수정
     @Override
-    public UserDTO updateUser(String uid, UserDTO userDTO, UserDetails userDetails) {
+    public UserDTO updateUser(UserDTO userDTO, MultipartFile image, UserDetails userDetails) {
+        String uid = userDTO.getUid();
         if (!userDetails.getUsername().equals(uid)) {
             throw new RuntimeException("권한이 없습니다");
         }
@@ -116,8 +117,38 @@ public class UserServiceImpl implements UserService {
         if (userDTO.getNickname() != null) {
             userEntity.setNickname(userDTO.getNickname());
         }
-        if (userDTO.getImage() != null) {
-            userEntity.setImage(userDTO.getImage());
+        if (image != null && !image.isEmpty()) {
+            try {
+                UUID uuid = UUID.randomUUID();
+                String fileExtension = image.getOriginalFilename().substring(image.getOriginalFilename().lastIndexOf("."));
+                String fileName = uuid.toString() + fileExtension;
+                String contentType;
+                switch (fileExtension.toLowerCase()) {
+                    case ".jpg":
+                    case ".jpeg":
+                        contentType = "image/jpeg";
+                        break;
+                    case ".png":
+                        contentType = "image/png";
+                        break;
+                    case ".bmp":
+                        contentType = "image/bmp";
+                        break;
+                    default:
+                        contentType = "application/octet-stream";
+                }
+                BlobId blobId = BlobId.of("mangowafflee", fileName);
+                BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                        .setContentType(contentType)
+                        .setContentDisposition("inline; filename=" + image.getOriginalFilename())
+                        .build();
+                storage.create(blobInfo, image.getBytes());
+                String imageUrl = "https://storage.cloud.google.com/mangowafflee/" + fileName;
+                userEntity.setImage(imageUrl);
+                logger.info("사용자 프로필 이미지 업데이트 완료! " + userEntity);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 업로드 중 오류가 발생했습니다.", e);
+            }
         }
 
         UserEntity updatedUser = userRepository.save(userEntity);
@@ -353,8 +384,6 @@ public class UserServiceImpl implements UserService {
         logger.info("사용자 닉네임 업데이트 완료! " + updatedUser);
         return UserDTO.entityToDto(updatedUser);
     }
-
-
 
     @Override
     public UserDTO getUserById(Long userId) {

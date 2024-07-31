@@ -24,11 +24,9 @@ public class UserEntity implements UserDetails {
     private String password;
     private String image;
     private String name;
+    private String nickname;
     private String email;
     private String provider;
-
-    @Column(unique = true)
-    private String nickname;
 
 
     @Override

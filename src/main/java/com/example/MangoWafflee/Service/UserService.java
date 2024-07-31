@@ -14,7 +14,7 @@ public interface UserService {
     boolean isUidDuplicate(String uid);
     boolean isNicknameDuplicate(String nickname);
     JWTDTO login(String uid, String password);
-    UserDTO updateUser(String uid, UserDTO userDTO, UserDetails userDetails);
+    UserDTO updateUser(UserDTO userDTO, MultipartFile image, UserDetails userDetails);
     void deleteUser(String uid, UserDetails userDetails);
     Long refreshToken(UserDetails userDetails);
     Long getTokenRemainingTime(UserDetails userDetails);

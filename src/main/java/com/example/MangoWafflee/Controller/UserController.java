@@ -48,12 +48,12 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    //닉네임으로 유저 조회
-    @GetMapping("/{nickname}")
-    public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname) {
-        UserDTO user = userService.getUserByNickname(nickname);
-        return ResponseEntity.ok(user);
-    }
+//    //닉네임으로 유저 조회
+//    @GetMapping("/{nickname}")
+//    public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname) {
+//        UserDTO user = userService.getUserByNickname(nickname);
+//        return ResponseEntity.ok(user);
+//    }
 
     //아이디 중복 확인
     @GetMapping("/check-uid")
@@ -70,9 +70,13 @@ public class UserController {
     }
 
     //회원 정보 수정
-    @PutMapping("/{uid}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable String uid, @RequestBody UserDTO userDTO, @AuthenticationPrincipal UserDetails userDetails) {
-        UserDTO updatedUser = userService.updateUser(uid, userDTO, userDetails);
+    @SneakyThrows
+    @PutMapping(value = "/{uid}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserDTO> updateUser(@PathVariable String uid, @RequestPart(value = "userData", required = false) String userData, @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal UserDetails userDetails) {
+        ObjectMapper mapper = new ObjectMapper();
+        UserDTO userDTO = userData != null ? mapper.readValue(userData, UserDTO.class) : new UserDTO();
+        userDTO.setUid(uid);
+        UserDTO updatedUser = userService.updateUser(userDTO, image, userDetails);
         return ResponseEntity.ok(updatedUser);
     }
 
