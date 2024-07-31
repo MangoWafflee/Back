@@ -63,7 +63,7 @@ public class SecurityConfig {
                         oauth2Login
                                 .loginPage("/login")
                                 .defaultSuccessUrl("/", true)
-                                .failureHandler(customOAuth2LoginFailureHandler) // 로그인 실패 핸들러 설정
+                                .failureHandler(customOAuth2LoginFailureHandler)
                                 .userInfoEndpoint(userInfoEndpoint ->
                                         userInfoEndpoint.userService(customOAuth2UserService())
                                 )

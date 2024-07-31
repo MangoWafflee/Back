@@ -11,10 +11,12 @@ import java.util.Map;
 public class CustomOAuth2User implements OAuth2User, UserDetails {
 
     private final UserEntity userEntity;
+    private final Collection<? extends GrantedAuthority> authorities;
     private final Map<String, Object> attributes;
 
-    public CustomOAuth2User(UserEntity userEntity, Map<String, Object> attributes) {
+    public CustomOAuth2User(UserEntity userEntity, Collection<? extends GrantedAuthority> authorities, Map<String, Object> attributes) {
         this.userEntity = userEntity;
+        this.authorities = authorities;
         this.attributes = attributes;
     }
 

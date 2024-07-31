@@ -5,12 +5,15 @@ import com.example.MangoWafflee.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -62,7 +65,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userRepository.save(userEntity);
         }
 
+        // 권한 설정
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+
         // OAuth2User 반환
-        return new CustomOAuth2User(userEntity, oAuth2User.getAttributes());
+        return new CustomOAuth2User(userEntity, Collections.singletonList(authority), oAuth2User.getAttributes());
     }
 }

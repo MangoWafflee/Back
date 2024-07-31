@@ -48,3 +48,7 @@ google:
   cloud:
     credentials:
       base64key: ${BUCKET_INCODING_KEY}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
