@@ -245,7 +245,8 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> properties = (Map<String, Object>) userInfo.get("properties");
             Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
 
-            String nickname = (String) properties.get("nickname");
+            String name = (String) properties.get("nickname");
+            String nickname = (String) kakaoAccount.get("profile_nickname");
             String email = (String) kakaoAccount.get("email");
 
             UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
@@ -253,7 +254,7 @@ public class UserServiceImpl implements UserService {
             if (userEntity == null) {
                 userEntity = UserEntity.builder()
                         .uid(uid)
-                        .name(nickname)
+                        .name(name)
                         .email(email)
                         .nickname(nickname)
                         .password(passwordEncoder.encode("oauth2user"))
@@ -261,7 +262,7 @@ public class UserServiceImpl implements UserService {
                         .build();
                 userRepository.save(userEntity);
             } else {
-                userEntity.setName(nickname);
+                userEntity.setName(name);
                 userEntity.setEmail(email);
                 userEntity.setNickname(nickname);
                 userRepository.save(userEntity);
