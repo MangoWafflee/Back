@@ -1,6 +1,6 @@
 package com.example.MangoWafflee.Global.Config;
 
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -25,14 +25,16 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 
     private static final Logger logger = LoggerFactory.getLogger(CustomOAuth2LoginSuccessHandler.class);
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String clientId;
+    private final KakaoOAuthProperties kakaoOAuthProperties;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-    private String clientSecret;
+    public CustomOAuth2LoginSuccessHandler(KakaoOAuthProperties kakaoOAuthProperties) {
+        this.kakaoOAuthProperties = kakaoOAuthProperties;
+    }
 
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String redirectUri;
+    @PostConstruct
+    public void logKakaoOAuthSettings() {
+        logger.info("Kakao OAuth 설정 값 - clientId : {}, clientSecret : {}, redirectUri : {}", kakaoOAuthProperties.getClientId(), kakaoOAuthProperties.getClientSecret(), kakaoOAuthProperties.getRedirectUri());
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -42,7 +44,7 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 
         String code = request.getParameter("code");
         logger.info("인가 코드 : {}", code);
-        logger.info("리다이렉트 URI : {}", redirectUri);
+        logger.info("리다이렉트 URI : {}", kakaoOAuthProperties.getRedirectUri());
 
         if (code != null) {
             String tokenEndpoint = "https://kauth.kakao.com/oauth/token";
@@ -53,9 +55,9 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("grant_type", "authorization_code");
-            params.add("client_id", clientId);
-            params.add("client_secret", clientSecret);
-            params.add("redirect_uri", redirectUri);
+            params.add("client_id", kakaoOAuthProperties.getClientId());
+            params.add("client_secret", kakaoOAuthProperties.getClientSecret());
+            params.add("redirect_uri", kakaoOAuthProperties.getRedirectUri());
             params.add("code", code);
 
             logger.info("토큰 요청 파라미터 (위치 : CustomOAuth2LoginSuccessHandler) : {}", params);

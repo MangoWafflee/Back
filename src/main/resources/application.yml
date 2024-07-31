@@ -8,7 +8,7 @@ spring:
   jpa:
     show-sql: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: false
@@ -49,6 +49,6 @@ google:
     credentials:
       base64key: ${BUCKET_INCODING_KEY}
 
-logging:
-  level:
-    org.springframework.security: DEBUG
+#logging:
+#  level:
+#    org.springframework.security: DEBUG

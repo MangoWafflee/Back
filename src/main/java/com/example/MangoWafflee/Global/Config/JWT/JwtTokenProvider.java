@@ -23,6 +23,11 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    @PostConstruct
+    public void logKakaoOAuthSettings() {
+        logger.info("JWT 설정 값 - secret : {}, expiration : {}", secret, expiration);
+    }
+
     private Key key;
 
     //활성화된 토큰을 저장하는 맵
