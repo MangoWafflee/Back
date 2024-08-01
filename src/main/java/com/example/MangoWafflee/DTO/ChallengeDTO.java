@@ -2,6 +2,7 @@ package com.example.MangoWafflee.DTO;
 
 import com.example.MangoWafflee.Entity.ChallengeEntity;
 import com.example.MangoWafflee.Entity.UserEntity;
+import com.example.MangoWafflee.Enum.StatusEnum;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,9 +18,8 @@ public class ChallengeDTO {
     private String content;
     private LocalDate startDate;
     private LocalDate endDate;
-    private boolean participating;
-    private Boolean successStatus;
-    private int participantCount;
+    private StatusEnum status;
+    private int count;
     private int totalAttempts;
     private int completedAttempts;
 
@@ -30,15 +30,14 @@ public class ChallengeDTO {
                 challengeEntity.getContent(),
                 challengeEntity.getStartDate(),
                 challengeEntity.getEndDate(),
-                challengeEntity.isParticipating(),
-                challengeEntity.getSuccessStatus(),
-                challengeEntity.getParticipantCount(),
+                challengeEntity.getStatus(),
+                challengeEntity.getCount(),
                 challengeEntity.getTotalAttempts(),
                 challengeEntity.getCompletedAttempts()
         );
     }
 
     public ChallengeEntity dtoToEntity() {
-        return new ChallengeEntity(id, title, content, startDate, endDate, participating, successStatus, participantCount, totalAttempts, completedAttempts);
+        return new ChallengeEntity(id, title, content, startDate, endDate, status, count, totalAttempts, completedAttempts);
     }
 }

@@ -2,50 +2,69 @@ package com.example.MangoWafflee.Service;
 
 import com.example.MangoWafflee.DTO.ChallengeDTO;
 import com.example.MangoWafflee.Entity.ChallengeEntity;
+import com.example.MangoWafflee.Enum.StatusEnum;
 import com.example.MangoWafflee.Repository.ChallengeRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChallengeServiceImpl implements ChallengeService {
-    private static final Logger logger = LoggerFactory.getLogger(ChallengeServiceImpl.class);
-
     private final ChallengeRepository challengeRepository;
+
+    //현재 시간에 따른 챌린지 상태 계산 메서드
+    private StatusEnum calculateStatus(LocalDate startDate, LocalDate endDate) {
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(startDate)) {
+            return StatusEnum.대기중;
+        } else if (today.isAfter(endDate)) {
+            return StatusEnum.진행완료;
+        } else {
+            return StatusEnum.진행중;
+        }
+    }
 
     //챌린지 생성
     @Override
-    public ChallengeDTO addChallenge(ChallengeDTO challengeDTO) {
-        ChallengeEntity challengeEntity = challengeRepository.save(challengeDTO.dtoToEntity());
-        logger.info("챌린지가 생성되었습니다! 챌린지 제목 : {}", challengeDTO.getTitle());
-        return ChallengeDTO.entityToDto(challengeEntity);
+    public ChallengeDTO createChallenge(ChallengeDTO challengeDTO) {
+        ChallengeEntity challengeEntity = challengeDTO.dtoToEntity();
+        challengeEntity.setCount(0);
+        challengeEntity.setTotalAttempts(0);
+        challengeEntity.setCompletedAttempts(0);
+        challengeEntity.setStatus(calculateStatus(challengeEntity.getStartDate(), challengeEntity.getEndDate()));
+
+        ChallengeEntity createdChallenge = challengeRepository.save(challengeEntity);
+        log.info("챌린지가 생성되었습니다. 챌린지 ID : {}", createdChallenge.getId());
+        return ChallengeDTO.entityToDto(createdChallenge);
     }
 
     //챌린지 전체 조회
     @Override
-    public List<ChallengeDTO> getChallenges() {
-        List<ChallengeDTO> challenges = challengeRepository.findAll().stream()
-                .map(ChallengeDTO::entityToDto)
+    public List<ChallengeDTO> getAllChallenges() {
+        return challengeRepository.findAll().stream()
+                .map(challengeEntity -> {
+                    challengeEntity.setStatus(calculateStatus(challengeEntity.getStartDate(), challengeEntity.getEndDate()));
+                    return ChallengeDTO.entityToDto(challengeEntity);
+                })
                 .collect(Collectors.toList());
-        if (challenges.isEmpty()) {
-            logger.info("챌린지가 없습니다.");
-        } else {
-            logger.info("챌린지 조회 완료!");
-        }
-        return challenges;
     }
 
-    //해당 챌린지 조회
+    //챌린지 상태 업데이트
     @Override
-    public ChallengeDTO getChallengeById(Long id) {
-        ChallengeEntity challengeEntity = challengeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("챌린지의 ID가 " + id + "인 챌린지를 찾을 수 없습니다"));
-        logger.info("챌린지가 조회되었습니다! 챌린지 ID : {}", id);
-        return ChallengeDTO.entityToDto(challengeEntity);
+    public ChallengeDTO updateChallengeStatus(Long challengeId, StatusEnum status) {
+        ChallengeEntity challengeEntity = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("챌린지 ID가 " + challengeId + "인 챌린지를 찾을 수 없습니다."));
+
+        challengeEntity.setStatus(status);
+
+        ChallengeEntity updatedChallenge = challengeRepository.save(challengeEntity);
+        log.info("챌린지 ID {}의 상태가 {}로 업데이트되었습니다.", challengeId, status);
+        return ChallengeDTO.entityToDto(updatedChallenge);
     }
 }

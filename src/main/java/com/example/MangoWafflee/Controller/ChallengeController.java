@@ -1,8 +1,10 @@
 package com.example.MangoWafflee.Controller;
 
 import com.example.MangoWafflee.DTO.ChallengeDTO;
+import com.example.MangoWafflee.Enum.StatusEnum;
 import com.example.MangoWafflee.Service.ChallengeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,19 +17,22 @@ public class ChallengeController {
 
     //챌린지 생성
     @PostMapping
-    public ChallengeDTO addChallenge(@RequestBody ChallengeDTO challengeDTO) {
-        return challengeService.addChallenge(challengeDTO);
+    public ResponseEntity<ChallengeDTO> createChallenge(@RequestBody ChallengeDTO challengeDTO) {
+        ChallengeDTO createdChallenge = challengeService.createChallenge(challengeDTO);
+        return ResponseEntity.ok(createdChallenge);
     }
 
-    //챌린지 전체 조회
+    //챌린지 조회
     @GetMapping
-    public List<ChallengeDTO> getChallenges() {
-        return challengeService.getChallenges();
+    public ResponseEntity<List<ChallengeDTO>> getAllChallenges() {
+        List<ChallengeDTO> challenges = challengeService.getAllChallenges();
+        return ResponseEntity.ok(challenges);
     }
 
-    //해당 챌린지 조회
-    @GetMapping("/{id}")
-    public ChallengeDTO getChallengeById(@PathVariable Long id) {
-        return challengeService.getChallengeById(id);
+    //챌린지 상태 업데이트
+    @PutMapping("/status/{challengeId}")
+    public ResponseEntity<ChallengeDTO> updateChallengeStatus(@PathVariable Long challengeId, @RequestBody ChallengeDTO challengeDTO) {
+        ChallengeDTO updatedChallenge = challengeService.updateChallengeStatus(challengeId, challengeDTO.getStatus());
+        return ResponseEntity.ok(updatedChallenge);
     }
 }
