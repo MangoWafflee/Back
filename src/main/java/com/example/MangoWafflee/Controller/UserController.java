@@ -57,14 +57,16 @@ public class UserController {
 
     //아이디 중복 확인
     @PostMapping("/check-uid")
-    public ResponseEntity<String> checkUidDuplicate(@RequestBody String uid) {
+    public ResponseEntity<String> checkUidDuplicate(@RequestBody Map<String, String> request) {
+        String uid = request.get("uid");
         String message = userService.isUidDuplicate(uid);
         return ResponseEntity.ok(message);
     }
 
     //닉네임 중복 확인
     @PostMapping("/check-nickname")
-    public ResponseEntity<String> checkNicknameDuplicate(@RequestBody String nickname) {
+    public ResponseEntity<String> checkNicknameDuplicate(@RequestBody Map<String, String> request) {
+        String nickname = request.get("nickname");
         String message = userService.isNicknameDuplicate(nickname);
         return ResponseEntity.ok(message);
     }
