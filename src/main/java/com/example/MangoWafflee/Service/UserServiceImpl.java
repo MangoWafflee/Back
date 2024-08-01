@@ -44,9 +44,9 @@ public class UserServiceImpl implements UserService {
     //회원가입
     @Override
     public UserDTO createUser(UserDTO userDTO) {
-        if (isUidDuplicate(userDTO.getUid())) {
+        if ("중복된 아이디가 존재합니다.".equals(isNicknameDuplicate(userDTO.getUid()))) {
             throw new IllegalArgumentException("중복된 아이디가 존재합니다");
-        } else if (isNicknameDuplicate(userDTO.getNickname())) {
+        } else if ("해당 닉네임은 존재합니다.".equals(isNicknameDuplicate(userDTO.getNickname()))) {
             throw new IllegalArgumentException("닉네임이 이미 존재합니다");
         }
         UserEntity userEntity = userDTO.dtoToEntity();
@@ -83,14 +83,24 @@ public class UserServiceImpl implements UserService {
 
     //아이디 중복 확인
     @Override
-    public boolean isUidDuplicate(String uid) {
-        return userRepository.existsByUid(uid);
+    public String isUidDuplicate(String uid) {
+        boolean isDuplicate = userRepository.existsByUid(uid);
+        if (isDuplicate) {
+            return "중복된 아이디가 존재합니다.";
+        } else {
+            return "사용 가능합니다.";
+        }
     }
 
     //닉네임 중복 확인
     @Override
-    public boolean isNicknameDuplicate(String nickname) {
-        return userRepository.existsByNickname(nickname);
+    public String isNicknameDuplicate(String nickname) {
+        boolean isDuplicate = userRepository.existsByNickname(nickname);
+        if (isDuplicate) {
+            return "해당 닉네임은 존재합니다.";
+        } else {
+            return "사용 가능합니다.";
+        }
     }
 
     //로그인
