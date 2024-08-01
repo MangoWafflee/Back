@@ -25,8 +25,4 @@ public class ChallengeEntity {
     private int participantCount;
     private int totalAttempts;
     private int completedAttempts;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
 }

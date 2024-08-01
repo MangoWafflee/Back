@@ -5,6 +5,7 @@ import com.example.MangoWafflee.DTO.ChallengeDTO;
 import java.util.List;
 
 public interface ChallengeService {
-    List<ChallengeDTO> getChallengesByUserId(Long userId);
     ChallengeDTO addChallenge(ChallengeDTO challengeDTO);
+    List<ChallengeDTO> getChallenges();
+    ChallengeDTO getChallengeById(Long id);
 }

@@ -22,7 +22,6 @@ public class ChallengeDTO {
     private int participantCount;
     private int totalAttempts;
     private int completedAttempts;
-    private Long userId;
 
     public static ChallengeDTO entityToDto(ChallengeEntity challengeEntity) {
         return new ChallengeDTO(
@@ -35,12 +34,11 @@ public class ChallengeDTO {
                 challengeEntity.getSuccessStatus(),
                 challengeEntity.getParticipantCount(),
                 challengeEntity.getTotalAttempts(),
-                challengeEntity.getCompletedAttempts(),
-                challengeEntity.getUser().getId()
+                challengeEntity.getCompletedAttempts()
         );
     }
 
-    public ChallengeEntity dtoToEntity(UserEntity user) {
-        return new ChallengeEntity(id, title, content, startDate, endDate, participating, successStatus, participantCount, totalAttempts, completedAttempts, user);
+    public ChallengeEntity dtoToEntity() {
+        return new ChallengeEntity(id, title, content, startDate, endDate, participating, successStatus, participantCount, totalAttempts, completedAttempts);
     }
 }

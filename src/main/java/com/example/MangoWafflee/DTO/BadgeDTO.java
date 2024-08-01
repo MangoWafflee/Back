@@ -18,7 +18,6 @@ public class BadgeDTO {
     private Long count;
     private boolean isAchieved;
     private LocalDate achievedAt;
-    private Long userId;
 
     public static BadgeDTO entityToDto(BadgeEntity badgeEntity) {
         return new BadgeDTO(
@@ -27,12 +26,11 @@ public class BadgeDTO {
                 badgeEntity.getContent(),
                 badgeEntity.getCount(),
                 badgeEntity.isAchieved(),
-                badgeEntity.getAchievedAt(),
-                badgeEntity.getUser().getId()
+                badgeEntity.getAchievedAt()
         );
     }
 
-    public BadgeEntity dtoToEntity(UserEntity user) {
-        return new BadgeEntity(id, title, content, count, isAchieved, achievedAt, user);
+    public BadgeEntity dtoToEntity() {
+        return new BadgeEntity(id, title, content, count, isAchieved, achievedAt);
     }
 }

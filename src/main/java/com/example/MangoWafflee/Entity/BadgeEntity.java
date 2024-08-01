@@ -21,8 +21,4 @@ public class BadgeEntity {
     private Long count;
     private boolean isAchieved;
     private LocalDate achievedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
 }
