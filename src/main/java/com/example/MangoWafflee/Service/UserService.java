@@ -6,21 +6,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
-    UserDTO getUserByUid(String uid);
+    UserDTO getUserByUid(String uid, UserDetails userDetails);
+    UserDTO getUserByNickname(String nickname, UserDetails userDetails);
     boolean isUidDuplicate(String uid);
     boolean isNicknameDuplicate(String nickname);
     JWTDTO login(String uid, String password);
-    UserDTO updateUser(String uid, UserDTO userDTO, UserDetails userDetails);
+    UserDTO updateUser(UserDTO userDTO, MultipartFile image, UserDetails userDetails);
     void deleteUser(String uid, UserDetails userDetails);
     Long refreshToken(UserDetails userDetails);
     Long getTokenRemainingTime(UserDetails userDetails);
     JWTDTO getUserWithTokenInfo(String uid, String token);
-    UserDTO updateNickname(String uid, String nickname);
-    JWTDTO loginWithOAuth2(OAuth2User oAuth2User);
+    UserDTO updateNickname(String uid, String nickname, UserDetails userDetails);
+    String getAccessToken(String code);
+    JWTDTO loginWithOAuth2(String code);
     UserDTO getKakaoUserInfo(String uid);
-    UserDTO addImageToUser(String uid, MultipartFile image);
+    UserDTO addImageToUser(String uid, MultipartFile image, UserDetails userDetails);
+    UserDTO getUserById(Long userId);
 }

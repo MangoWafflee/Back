@@ -1,0 +1,11 @@
+### Local DB ###
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${LOCAL_URL}
+    username: ${LOCAL_ID}
+    password: ${LOCAL_PW}

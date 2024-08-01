@@ -1,7 +1,9 @@
 package com.example.MangoWafflee.Controller;
 
 import com.example.MangoWafflee.DTO.JWTDTO;
+import com.example.MangoWafflee.DTO.OAuth2CodeDTO;
 import com.example.MangoWafflee.DTO.UserDTO;
+import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +41,17 @@ public class UserController {
         return ResponseEntity.ok(login);
     }
 
-    //유저 조회
-    @GetMapping("/{uid}")
-    public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid) {
-        UserDTO user = userService.getUserByUid(uid);
+    //uid로 유저 조회
+    @GetMapping("/uid/{uid}")
+    public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid, @AuthenticationPrincipal UserDetails userDetails) {
+        UserDTO user = userService.getUserByUid(uid, userDetails);
+        return ResponseEntity.ok(user);
+    }
+
+    //닉네임으로 유저 조회
+    @GetMapping("/nickname/{nickname}")
+    public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname, @AuthenticationPrincipal UserDetails userDetails) {
+        UserDTO user = userService.getUserByNickname(nickname, userDetails);
         return ResponseEntity.ok(user);
     }
 
@@ -61,9 +70,13 @@ public class UserController {
     }
 
     //회원 정보 수정
-    @PutMapping("/{uid}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable String uid, @RequestBody UserDTO userDTO, @AuthenticationPrincipal UserDetails userDetails) {
-        UserDTO updatedUser = userService.updateUser(uid, userDTO, userDetails);
+    @SneakyThrows
+    @PutMapping(value = "/{uid}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserDTO> updateUser(@PathVariable String uid, @RequestPart(value = "userData", required = false) String userData, @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal UserDetails userDetails) {
+        ObjectMapper mapper = new ObjectMapper();
+        UserDTO userDTO = userData != null ? mapper.readValue(userData, UserDTO.class) : new UserDTO();
+        userDTO.setUid(uid);
+        UserDTO updatedUser = userService.updateUser(userDTO, image, userDetails);
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -74,7 +87,7 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // 토큰 유효 시간 확인
+    //토큰 유효 시간 확인
     @GetMapping("/token-remaining-time")
     public ResponseEntity<Long> getTokenRemainingTime(@AuthenticationPrincipal UserDetails userDetails) {
         Long remainingTime = userService.getTokenRemainingTime(userDetails);
@@ -98,41 +111,53 @@ public class UserController {
         return ResponseEntity.ok(userWithTokenInfo);
     }
 
-    //닉네임 수정
-    @PutMapping("/nickname/{uid}")
-    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody String nickname) {
-        UserDTO updatedUser = userService.updateNickname(uid, nickname);
-        return ResponseEntity.ok(updatedUser);
+    //카카오 로그인 성공 시 호출되는 엔드포인트 (GET)
+    @GetMapping("/oauth2/code/kakao")
+    public ResponseEntity<JWTDTO> kakaoCallback(@RequestParam String code) {
+        JWTDTO jwtDto = userService.loginWithOAuth2(code);
+        return ResponseEntity.ok(jwtDto);
     }
 
-    //카카오 로그인 성공 시 호출되는 메서드
-    @GetMapping("/loginSuccess")
-    public JWTDTO loginSuccess(OAuth2User oAuth2User) {
-        return userService.loginWithOAuth2(oAuth2User);
+    //카카오 로그인 성공 시 호출되는 엔드포인트 (POST)
+    @PostMapping("/oauth2/code/kakao")
+    public ResponseEntity<JWTDTO> kakaoLoginPost(@RequestBody OAuth2CodeDTO codeDTO) {
+        JWTDTO jwtDto = userService.loginWithOAuth2(codeDTO.getCode());
+        return ResponseEntity.ok(jwtDto);
     }
 
-    // 카카오 로그인 유저 정보 조회
+    //카카오 로그인 유저 정보 조회
     @GetMapping("/kakao/{uid}")
     public ResponseEntity<UserDTO> getKakaoUserInfo(@PathVariable String uid) {
         UserDTO user = userService.getKakaoUserInfo(uid);
         return ResponseEntity.ok(user);
     }
 
-    //카카오 유저 프로필 이미지 등록
+    //카카오 유저 프로필 이미지 설정
     @SneakyThrows
     @PostMapping(value = "/image", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image) {
+    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("uid") String uid, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal UserDetails userDetails) {
         ObjectMapper mapper = new ObjectMapper();
-        UserDTO userDTO = mapper.readValue(userData, UserDTO.class);
-        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image);
+        UserDTO userDTO = mapper.readValue(uid, UserDTO.class);
+        UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
     }
 
     //카카오 유저 닉네임 설정
     @PostMapping("/nickname/{uid}")
-    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request) {
+    public ResponseEntity<UserDTO> updateNickname(@PathVariable String uid, @RequestBody Map<String, String> request, @AuthenticationPrincipal UserDetails userDetails) {
         String nickname = request.get("nickname");
-        UserDTO updatedUser = userService.updateNickname(uid, nickname);
+        UserDTO updatedUser = userService.updateNickname(uid, nickname, userDetails);
         return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
+    }
+
+    @GetMapping("/entry")
+    public ResponseEntity<UserDTO> getUserEntry(@RequestParam Long userId) {
+        UserDTO userDTO = userService.getUserById(userId);
+
+        if (userDTO == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(userDTO);
     }
 }
