@@ -48,13 +48,6 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-//    //닉네임으로 유저 조회
-//    @GetMapping("/{nickname}")
-//    public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname) {
-//        UserDTO user = userService.getUserByNickname(nickname);
-//        return ResponseEntity.ok(user);
-//    }
-
     //아이디 중복 확인
     @GetMapping("/check-uid")
     public ResponseEntity<Boolean> isUidDuplicate(@RequestBody String uid) {
@@ -135,9 +128,9 @@ public class UserController {
     //카카오 유저 프로필 이미지 설정
     @SneakyThrows
     @PostMapping(value = "/image", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("userData") String userData, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<UserDTO> addImageToUser(@RequestPart("uid") String uid, @RequestPart("image") MultipartFile image, @AuthenticationPrincipal UserDetails userDetails) {
         ObjectMapper mapper = new ObjectMapper();
-        UserDTO userDTO = mapper.readValue(userData, UserDTO.class);
+        UserDTO userDTO = mapper.readValue(uid, UserDTO.class);
         UserDTO updatedUser = userService.addImageToUser(userDTO.getUid(), image, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(updatedUser);
     }
