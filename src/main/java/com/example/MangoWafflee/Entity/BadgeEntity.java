@@ -3,8 +3,6 @@ package com.example.MangoWafflee.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
-
 @Setter
 @Getter
 @AllArgsConstructor
@@ -18,7 +16,4 @@ public class BadgeEntity {
     private Long id;
     private String title;
     private String content;
-    private Long count;
-    private boolean isAchieved;
-    private LocalDate achievedAt;
 }
