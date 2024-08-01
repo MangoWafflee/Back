@@ -80,6 +80,6 @@ public class CustomOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             response.sendRedirect("/loginFailure");
         }
 
-        response.sendRedirect("/profile.html");
+        response.sendRedirect("/");
     }
 }

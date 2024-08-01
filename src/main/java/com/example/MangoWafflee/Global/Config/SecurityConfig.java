@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2Login ->
                         oauth2Login
                                 .loginPage("/login")
-                                .defaultSuccessUrl("/profile.html", true)
+                                .defaultSuccessUrl("/", true)
                                 .failureHandler(customOAuth2LoginFailureHandler)
                                 .userInfoEndpoint(userInfoEndpoint ->
                                         userInfoEndpoint.userService(customOAuth2UserService())
