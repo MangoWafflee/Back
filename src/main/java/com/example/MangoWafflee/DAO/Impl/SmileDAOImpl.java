@@ -35,6 +35,11 @@ public class SmileDAOImpl implements SmileDAO {
     }
 
     @Override
+    public List<SmileEntity> findByNicknameAndYearAndMonthAndDay(String nickname, int year, int month, Integer day) {
+        return smileRepository.findByNicknameAndYearAndMonthAndDay(nickname, year, month, day);
+    }
+
+    @Override
     public List<SmileEntity> findAll() {
         return smileRepository.findAll();
     }

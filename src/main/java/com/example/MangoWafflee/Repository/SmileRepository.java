@@ -17,4 +17,7 @@ public interface SmileRepository extends JpaRepository<SmileEntity, Long> {
 
     @Query("SELECT s FROM SmileEntity s WHERE s.user.nickname = :nickname AND YEAR(s.date) = :year AND MONTH(s.date) = :month")
     List<SmileEntity> findByNicknameAndYearAndMonth(@Param("nickname") String nickname, @Param("year") int year, @Param("month") int month);
+
+    @Query("SELECT s FROM SmileEntity s WHERE s.user.nickname = :nickname AND YEAR(s.date) = :year AND MONTH(s.date) = :month AND DAY(s.date) = :day")
+    List<SmileEntity> findByNicknameAndYearAndMonthAndDay(@Param("nickname") String nickname, @Param("year") int year, @Param("month") int month, @Param("day") int day);
 }

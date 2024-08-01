@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Setter
 @Getter
@@ -23,7 +24,10 @@ public class SmileEntity {
     @Column(nullable = false)
     private LocalDate date;
 
+    @Column(nullable = false)
+    private LocalTime time; // 새로운 시간 필드 추가
+
     @ManyToOne
-    @JoinColumn(name = "nickname", referencedColumnName = "nickname")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private UserEntity user;
 }

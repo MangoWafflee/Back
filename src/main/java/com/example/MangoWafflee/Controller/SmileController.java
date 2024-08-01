@@ -26,6 +26,8 @@ public class SmileController {
             SmileDTO savedSmile = smileService.saveSmile(smileDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedSmile);
         } catch (Exception e) {
+            // 로그 추가
+            System.err.println("Error saving smile: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
@@ -36,23 +38,43 @@ public class SmileController {
             List<SmileDTO> smileDTOs = smileService.getSmileByNickname(nickname);
             return ResponseEntity.ok(smileDTOs);
         } catch (Exception e) {
+            // 로그 추가
+            System.err.println("Error fetching smiles for user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
     @GetMapping("/user/{nickname}/date")
-    public ResponseEntity<List<SmileDTO>> getSmileByNicknameAndDate(@PathVariable String nickname, @RequestParam int year, @RequestParam int month) {
+    public ResponseEntity<List<SmileDTO>> getSmileByNicknameAndDate(
+            @PathVariable String nickname,
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(required = false) Integer day
+    ) {
         try {
-            List<SmileDTO> smileDTOs = smileService.getSmileByNicknameAndYearAndMonth(nickname, year, month);
+            List<SmileDTO> smileDTOs;
+            if (day != null) {
+                smileDTOs = smileService.getSmileByUserNameAndYearAndMonthAndDay(nickname, year, month, day);
+            } else {
+                smileDTOs = smileService.getSmileByNicknameAndYearAndMonth(nickname, year, month);
+            }
             return ResponseEntity.ok(smileDTOs);
         } catch (Exception e) {
+            // 로그 추가
+            System.err.println("Error fetching smiles for user by date: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<SmileDTO>> getAllSmile() {
-        List<SmileDTO> smileDTOs = smileService.getAllSmile();
-        return ResponseEntity.ok(smileDTOs);
+        try {
+            List<SmileDTO> smileDTOs = smileService.getAllSmile();
+            return ResponseEntity.ok(smileDTOs);
+        } catch (Exception e) {
+            // 로그 추가
+            System.err.println("Error fetching all smiles: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 }

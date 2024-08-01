@@ -63,6 +63,18 @@ public class SmileServiceImpl implements SmileService {
     }
 
     @Override
+    public List<SmileDTO> getSmileByUserNameAndYearAndMonthAndDay(String nickname, int year, int month, Integer day) throws Exception {
+        UserEntity user = userRepository.findByNickname(nickname);
+        if (user != null) {
+            List<SmileEntity> smileEntities = smileDAO.findByNicknameAndYearAndMonthAndDay(nickname, year, month, day);
+            return smileEntities.stream()
+                    .map(SmileDTO::fromEntity)
+                    .toList();
+        } else {
+            throw new Exception("User not found");
+        }    }
+
+    @Override
     public List<SmileDTO> getAllSmile() {
         List<SmileEntity> smileEntities = smileDAO.findAll();
         return smileEntities.stream()
