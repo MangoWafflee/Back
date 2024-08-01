@@ -81,7 +81,6 @@ public class UserServiceImpl implements UserService {
         return UserDTO.entityToDto(userEntity);
     }
 
-
     //아이디 중복 확인
     @Override
     public boolean isUidDuplicate(String uid) {
@@ -285,7 +284,6 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
 
             String name = (String) properties.get("nickname");
-            String nickname = (String) kakaoAccount.get("profile_nickname");
             String email = (String) kakaoAccount.get("email");
 
             UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
@@ -295,7 +293,6 @@ public class UserServiceImpl implements UserService {
                         .uid(uid)
                         .name(name)
                         .email(email)
-                        .nickname(nickname)
                         .password(passwordEncoder.encode("oauth2user"))
                         .provider("kakao")
                         .build();
@@ -303,7 +300,6 @@ public class UserServiceImpl implements UserService {
             } else {
                 userEntity.setName(name);
                 userEntity.setEmail(email);
-                userEntity.setNickname(nickname);
                 userRepository.save(userEntity);
             }
 
@@ -327,7 +323,7 @@ public class UserServiceImpl implements UserService {
     //카카오 유저 프로필 이미지 설정
     @Override
     public UserDTO addImageToUser(String uid, MultipartFile image, UserDetails userDetails) {
-        // 사용자 인증
+        // 토큰으로 동일한 사용자인지 인증
         if (!userDetails.getUsername().equals(uid)) {
             throw new RuntimeException("권한이 없습니다.");
         }
@@ -378,7 +374,6 @@ public class UserServiceImpl implements UserService {
     //카카오 유저 닉네임 설정
     @Override
     public UserDTO updateNickname(String uid, String nickname, UserDetails userDetails) {
-        // 사용자 인증
         if (!userDetails.getUsername().equals(uid)) {
             throw new RuntimeException("권한이 없습니다.");
         }

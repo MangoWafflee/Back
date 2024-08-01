@@ -32,17 +32,7 @@ public class UserDTO {
     }
 
     public UserEntity dtoToEntity() {
-        return UserEntity.builder()
-                .id(id)
-                .uid(uid)
-                .password(password)
-                .name(name)
-                .nickname(nickname)
-                .image(image)
-                .email(email)
-                .provider(provider)
-                .build();
+        return new UserEntity(id, uid, password, name, nickname, image, email, provider);
     }
 }
-
 
