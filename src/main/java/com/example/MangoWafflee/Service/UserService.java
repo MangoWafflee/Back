@@ -6,13 +6,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
     UserDTO getUserByUid(String uid, UserDetails userDetails);
     UserDTO getUserByNickname(String nickname, UserDetails userDetails);
-    String isUidDuplicate(String uid);
-    String isNicknameDuplicate(String nickname);
+    Map<String, String> isUidDuplicate(String uid);
+    Map<String, String> isNicknameDuplicate(String nickname);
     JWTDTO login(String uid, String password);
     UserDTO updateUser(UserDTO userDTO, MultipartFile image, UserDetails userDetails);
     void deleteUser(String uid, UserDetails userDetails);

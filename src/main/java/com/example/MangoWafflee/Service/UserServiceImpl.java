@@ -24,6 +24,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -83,24 +85,28 @@ public class UserServiceImpl implements UserService {
 
     //아이디 중복 확인
     @Override
-    public String isUidDuplicate(String uid) {
+    public Map<String, String> isUidDuplicate(String uid) {
         boolean isDuplicate = userRepository.existsByUid(uid);
+        Map<String, String> response = new HashMap<>();
         if (isDuplicate) {
-            return "중복된 아이디가 존재합니다.";
+            response.put("message", "해당 아이디는 존재합니다.");
         } else {
-            return "사용 가능합니다.";
+            response.put("message", "사용 가능합니다.");
         }
+        return response;
     }
 
     //닉네임 중복 확인
     @Override
-    public String isNicknameDuplicate(String nickname) {
+    public Map<String, String> isNicknameDuplicate(String nickname) {
         boolean isDuplicate = userRepository.existsByNickname(nickname);
+        Map<String, String> response = new HashMap<>();
         if (isDuplicate) {
-            return "해당 닉네임은 존재합니다.";
+            response.put("message", "해당 닉네임은 존재합니다.");
         } else {
-            return "사용 가능합니다.";
+            response.put("message", "사용 가능합니다.");
         }
+        return response;
     }
 
     //로그인
