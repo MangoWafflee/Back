@@ -9,8 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
-    UserDTO getUserByUid(String uid);
-    UserDTO getUserByNickname(String nickname);
+    UserDTO getUserByUid(String uid, UserDetails userDetails);
+    UserDTO getUserByNickname(String nickname, UserDetails userDetails);
     boolean isUidDuplicate(String uid);
     boolean isNicknameDuplicate(String nickname);
     JWTDTO login(String uid, String password);

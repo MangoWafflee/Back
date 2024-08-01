@@ -56,9 +56,13 @@ public class UserServiceImpl implements UserService {
         return UserDTO.entityToDto(savedUser);
     }
 
-    //회원 조회
+    //uid로 회원 조회
     @Override
-    public UserDTO getUserByUid(String uid) {
+    public UserDTO getUserByUid(String uid, UserDetails userDetails) {
+        if (!userDetails.getUsername().equals(uid)) {
+            throw new RuntimeException("권한이 없습니다.");
+        }
+
         UserEntity userEntity = userRepository.findByUid(uid)
                 .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
         return UserDTO.entityToDto(userEntity);
@@ -66,13 +70,17 @@ public class UserServiceImpl implements UserService {
 
     //닉네임으로 유저 조회
     @Override
-    public UserDTO getUserByNickname(String nickname) {
+    public UserDTO getUserByNickname(String nickname, UserDetails userDetails) {
         UserEntity userEntity = userRepository.findByNickname(nickname);
         if (userEntity == null) {
             throw new RuntimeException("유저의 nickname이 " + nickname + "인 사용자를 찾을 수 없습니다");
         }
+        if (!userEntity.getUid().equals(userDetails.getUsername())) {
+            throw new RuntimeException("권한이 없습니다.");
+        }
         return UserDTO.entityToDto(userEntity);
     }
+
 
     //아이디 중복 확인
     @Override

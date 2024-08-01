@@ -41,10 +41,17 @@ public class UserController {
         return ResponseEntity.ok(login);
     }
 
-    //유저 조회
-    @GetMapping("/{uid}")
-    public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid) {
-        UserDTO user = userService.getUserByUid(uid);
+    //uid로 유저 조회
+    @GetMapping("/uid/{uid}")
+    public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid, @AuthenticationPrincipal UserDetails userDetails) {
+        UserDTO user = userService.getUserByUid(uid, userDetails);
+        return ResponseEntity.ok(user);
+    }
+
+    //닉네임으로 유저 조회
+    @GetMapping("/nickname/{nickname}")
+    public ResponseEntity<UserDTO> getUserByNickname(@PathVariable String nickname, @AuthenticationPrincipal UserDetails userDetails) {
+        UserDTO user = userService.getUserByNickname(nickname, userDetails);
         return ResponseEntity.ok(user);
     }
 
