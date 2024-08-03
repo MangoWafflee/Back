@@ -114,6 +114,7 @@ public class UserController {
     }
 
     //카카오 로그인 성공 시 호출되는 엔드포인트 (GET)
+    @CrossOrigin(origins = "http://127.0.0.1:3000")
     @GetMapping("/oauth2/code/kakao")
     public ResponseEntity<JWTDTO> kakaoCallback(@RequestParam String code) {
         JWTDTO jwtDto = userService.loginWithOAuth2(code);
@@ -121,6 +122,7 @@ public class UserController {
     }
 
     //카카오 로그인 성공 시 호출되는 엔드포인트 (POST)
+    @CrossOrigin(origins = "http://127.0.0.1:3000")
     @PostMapping("/oauth2/code/kakao")
     public ResponseEntity<JWTDTO> kakaoLoginPost(@RequestBody OAuth2CodeDTO codeDTO) {
         JWTDTO jwtDto = userService.loginWithOAuth2(codeDTO.getCode());
