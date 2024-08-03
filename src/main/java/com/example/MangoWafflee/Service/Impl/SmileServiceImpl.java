@@ -30,6 +30,12 @@ public class SmileServiceImpl implements SmileService {
             SmileEntity smileEntity = SmileDTO.toEntity(smileDTO);
             smileEntity.setUser(user);
             SmileEntity savedSmile = smileDAO.save(smileEntity);
+
+            //유저 smilecount 업데이트 추가 (성민)
+            user.setSmilecount(user.getSmilecount() + 1);
+            //업데이트된 유저 정보 저장 추가 (성민)
+            userRepository.save(user);
+
             return SmileDTO.fromEntity(savedSmile);
         } else {
             throw new Exception("User not found");

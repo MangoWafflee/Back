@@ -17,6 +17,7 @@ public class UserDTO {
     private String image;
     private String email;
     private String provider;
+    private int smilecount;
 
     public static UserDTO entityToDto(UserEntity userEntity) {
         return new UserDTO(
@@ -27,12 +28,13 @@ public class UserDTO {
                 userEntity.getNickname(),
                 userEntity.getImage(),
                 userEntity.getEmail(),
-                userEntity.getProvider()
+                userEntity.getProvider(),
+                userEntity.getSmilecount()
         );
     }
 
     public UserEntity dtoToEntity() {
-        return new UserEntity(id, uid, password, name, nickname, image, email, provider);
+        return new UserEntity(id, uid, password, name, nickname, image, email, provider, smilecount);
     }
 }
 

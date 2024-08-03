@@ -27,7 +27,7 @@ public class UserEntity implements UserDetails {
     private String image;
     private String email;
     private String provider;
-
+    private int smilecount = 0;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
