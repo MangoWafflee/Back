@@ -101,4 +101,57 @@ public class BadgeServiceImpl implements BadgeService {
         log.info("유저 뱃지 ID {}의 상태가 {}로 업데이트 되었습니다.", userBadgeId, status);
         return UserBadgeDTO.entityToDto(updatedUserBadge);
     }
+
+    //유저 스마일 카운트에 따라 뱃지 상태 업데이트
+    @Override
+    public void checkAndUpdateBadgeStatus(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저의 ID가 " + userId + "인 사용자를 찾을 수 없습니다"));
+        int smileCount = user.getSmilecount();
+
+        List<UserBadgeEntity> userBadges = userBadgeRepository.findByUserId(userId);
+        for (UserBadgeEntity userBadge : userBadges) {
+            Long badgeId = userBadge.getBadge().getId();
+            boolean shouldUpdate = false;
+
+            switch (badgeId.intValue()) {
+                case 1:
+                    if (smileCount >= 1) shouldUpdate = true;
+                    break;
+                case 2:
+                    if (smileCount >= 5) shouldUpdate = true;
+                    break;
+                case 3:
+                    if (smileCount >= 10) shouldUpdate = true;
+                    break;
+                case 4:
+                    if (smileCount >= 20) shouldUpdate = true;
+                    break;
+                case 5:
+                    if (smileCount >= 30) shouldUpdate = true;
+                    break;
+                case 6:
+                    if (smileCount >= 50) shouldUpdate = true;
+                    break;
+                case 7:
+                    if (smileCount >= 100) shouldUpdate = true;
+                    break;
+                case 8:
+                    if (smileCount >= 300) shouldUpdate = true;
+                    break;
+                case 9:
+                    if (smileCount >= 500) shouldUpdate = true;
+                    break;
+                default:
+                    break;
+            }
+
+            if (shouldUpdate && userBadge.getIsAchieved() != StatusEnum.성공) {
+                userBadge.setIsAchieved(StatusEnum.성공);
+                userBadge.setAchievedAt(LocalDate.now());
+                userBadgeRepository.save(userBadge);
+                log.info("유저 ID {}의 뱃지 ID {}가 성공으로 업데이트 되었습니다.", userId, badgeId);
+            }
+        }
+    }
 }

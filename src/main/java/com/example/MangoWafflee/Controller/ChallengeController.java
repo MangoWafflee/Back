@@ -57,13 +57,6 @@ public class ChallengeController {
         return ResponseEntity.ok(updatedUserChallenge);
     }
 
-    //유저 챌린지 수행 자동 메서드 (안씀)
-    @PutMapping("/userchallenge/check/{userId}")
-    public ResponseEntity<Void> checkAndUpdateChallengeStatus(@PathVariable Long userId) {
-        challengeService.checkAndUpdateChallengeStatus(userId);
-        return ResponseEntity.ok().build();
-    }
-
     //유저 챌린지 조회
     @GetMapping("/userchallenge/{userId}")
     public ResponseEntity<List<UserChallengeDTO>> getUserChallenges(@PathVariable Long userId) {

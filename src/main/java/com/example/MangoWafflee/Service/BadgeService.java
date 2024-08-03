@@ -13,4 +13,5 @@ public interface BadgeService {
     List<UserBadgeDTO> getUserBadges(Long userId);
     UserBadgeDTO updateUserBadgeStatus(Long userBadgeId, StatusEnum status);
     UserBadgeDTO createUserBadge(UserBadgeDTO userBadgeDTO);
+    void checkAndUpdateBadgeStatus(Long userId);
 }

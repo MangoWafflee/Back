@@ -37,13 +37,13 @@ public class SmileServiceImpl implements SmileService {
             smileEntity.setUser(user);
             SmileEntity savedSmile = smileDAO.save(smileEntity);
 
-            //유저 smilecount 업데이트 추가 (성민)
+            //유저 smilecount 업데이트 추가
             user.setSmilecount(user.getSmilecount() + 1);
-            //업데이트된 유저 정보 저장 추가 (성민)
+            //업데이트된 유저 정보 저장 추가
             userRepository.save(user);
-            // 뱃지 상태 업데이트
-//            badgeService.checkAndUpdateBadgeStatus(user);
-            // 챌린지 상태 업데이트
+            //유저 뱃지 상태 업데이트 추가
+            badgeService.checkAndUpdateBadgeStatus(user.getId());
+            //챌린지 상태 업데이트 추가
             challengeService.checkAndUpdateChallengeStatus(user.getId());
 
             return SmileDTO.fromEntity(savedSmile);
