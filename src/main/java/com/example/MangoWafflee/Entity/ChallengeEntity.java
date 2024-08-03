@@ -24,6 +24,6 @@ public class ChallengeEntity {
     private LocalDate endDate; // 챌린지 종료 시간
     private StatusEnum status; // 챌린지 상태
     private int count; // 챌린지 참여자 수
-    private int totalAttempts; // 챌린지 완료까지 수행할 횟수(?) => 총 시도 횟수?
+    private int totalAttempts; // 챌린지 완료까지 수행할 횟수(?) => 총 시도 횟수? (넌 뭐냐 진짜로)
     private int completedAttempts; // 챌린지 성공 횟수
 }
