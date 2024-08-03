@@ -9,7 +9,10 @@ import java.util.List;
 public interface ChallengeService {
     ChallengeDTO createChallenge(ChallengeDTO challengeDTO);
     List<ChallengeDTO> getAllChallenges();
+    ChallengeDTO getChallengeById(Long challengeId);
     ChallengeDTO updateChallengeStatus(Long challengeId, StatusEnum status);
     UserChallengeDTO participateInChallenge(Long userId, Long challengeId, StatusEnum status);
     UserChallengeDTO updateUserChallengeStatus(Long userChallengeId, StatusEnum status);
+    void checkAndUpdateChallengeStatus(Long userId);
+    List<UserChallengeDTO> getUserChallenges(Long userId);
 }

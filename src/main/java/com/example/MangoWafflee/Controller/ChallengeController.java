@@ -29,6 +29,13 @@ public class ChallengeController {
         return ResponseEntity.ok(challenges);
     }
 
+    //해당 챌린지 조회
+    @GetMapping("/{challengeId}")
+    public ResponseEntity<ChallengeDTO> getChallengeById(@PathVariable Long challengeId) {
+        ChallengeDTO challenge = challengeService.getChallengeById(challengeId);
+        return ResponseEntity.ok(challenge);
+    }
+
     //챌린지 상태 업데이트
     @PutMapping("/status/{challengeId}")
     public ResponseEntity<ChallengeDTO> updateChallengeStatus(@PathVariable Long challengeId, @RequestBody ChallengeDTO challengeDTO) {
@@ -48,5 +55,19 @@ public class ChallengeController {
     public ResponseEntity<UserChallengeDTO> updateUserChallengeStatus(@PathVariable Long userChallengeId, @RequestBody UserChallengeDTO userChallengeDTO) {
         UserChallengeDTO updatedUserChallenge = challengeService.updateUserChallengeStatus(userChallengeId, userChallengeDTO.getSuccessStatus());
         return ResponseEntity.ok(updatedUserChallenge);
+    }
+
+    //유저 챌린지 수행 자동 메서드 (안씀)
+    @PutMapping("/userchallenge/check/{userId}")
+    public ResponseEntity<Void> checkAndUpdateChallengeStatus(@PathVariable Long userId) {
+        challengeService.checkAndUpdateChallengeStatus(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    //유저 챌린지 조회
+    @GetMapping("/userchallenge/{userId}")
+    public ResponseEntity<List<UserChallengeDTO>> getUserChallenges(@PathVariable Long userId) {
+        List<UserChallengeDTO> userChallenges = challengeService.getUserChallenges(userId);
+        return ResponseEntity.ok(userChallenges);
     }
 }

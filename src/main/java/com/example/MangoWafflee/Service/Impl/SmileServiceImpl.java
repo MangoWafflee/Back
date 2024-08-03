@@ -5,6 +5,8 @@ import com.example.MangoWafflee.DTO.SmileDTO;
 import com.example.MangoWafflee.Entity.SmileEntity;
 import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Repository.UserRepository;
+import com.example.MangoWafflee.Service.BadgeService;
+import com.example.MangoWafflee.Service.ChallengeService;
 import com.example.MangoWafflee.Service.SmileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,11 +18,15 @@ public class SmileServiceImpl implements SmileService {
 
     private final SmileDAO smileDAO;
     private final UserRepository userRepository;
+    private final BadgeService badgeService;
+    private final ChallengeService challengeService;
 
     @Autowired
-    public SmileServiceImpl(SmileDAO smileDAO, UserRepository userRepository) {
+    public SmileServiceImpl(SmileDAO smileDAO, UserRepository userRepository, BadgeService badgeService, ChallengeService challengeService) {
         this.smileDAO = smileDAO;
         this.userRepository = userRepository;
+        this.badgeService = badgeService;
+        this.challengeService = challengeService;
     }
 
     @Override
@@ -35,6 +41,10 @@ public class SmileServiceImpl implements SmileService {
             user.setSmilecount(user.getSmilecount() + 1);
             //업데이트된 유저 정보 저장 추가 (성민)
             userRepository.save(user);
+            // 뱃지 상태 업데이트
+//            badgeService.checkAndUpdateBadgeStatus(user);
+            // 챌린지 상태 업데이트
+            challengeService.checkAndUpdateChallengeStatus(user.getId());
 
             return SmileDTO.fromEntity(savedSmile);
         } else {
