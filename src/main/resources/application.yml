@@ -5,7 +5,6 @@ spring:
   profiles:
     active: prod # 개발 시 dev 프로필 사용 권장
 
-#테스트
   jpa:
     show-sql: false
     hibernate:
