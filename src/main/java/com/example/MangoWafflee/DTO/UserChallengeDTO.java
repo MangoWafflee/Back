@@ -17,6 +17,7 @@ public class UserChallengeDTO {
     private Long id;
     private StatusEnum participating;
     private StatusEnum successStatus;
+    private int completedAttempts;
     private UserDTO user;
     private ChallengeDTO challenge;
 
@@ -25,12 +26,13 @@ public class UserChallengeDTO {
                 userChallengeEntity.getId(),
                 userChallengeEntity.getParticipating(),
                 userChallengeEntity.getSuccessStatus(),
+                userChallengeEntity.getCompletedAttempts(),
                 UserDTO.entityToDto(userChallengeEntity.getUser()),
                 ChallengeDTO.entityToDto(userChallengeEntity.getChallenge())
         );
     }
 
     public UserChallengeEntity dtoToEntity(UserEntity user, ChallengeEntity challenge) {
-        return new UserChallengeEntity(id, participating, successStatus, user, challenge);
+        return new UserChallengeEntity(id, participating, successStatus, completedAttempts, user, challenge);
     }
 }

@@ -1,8 +1,11 @@
 package com.example.MangoWafflee.Controller;
 
 import com.example.MangoWafflee.DTO.BadgeDTO;
+import com.example.MangoWafflee.DTO.UserBadgeDTO;
+import com.example.MangoWafflee.Enum.StatusEnum;
 import com.example.MangoWafflee.Service.BadgeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,5 +32,24 @@ public class BadgeController {
     @GetMapping("/{id}")
     public BadgeDTO getBadgeById(@PathVariable Long id) {
         return badgeService.getBadgeById(id);
+    }
+
+    //유저 뱃지 생성
+    @PostMapping("/userbadge")
+    public UserBadgeDTO createUserBadge(@RequestBody UserBadgeDTO userBadgeDTO) {
+        return badgeService.createUserBadge(userBadgeDTO);
+    }
+
+    //해당 유저 전체 뱃지 조회
+    @GetMapping("/userbadges/{userId}")
+    public List<UserBadgeDTO> getUserBadges(@PathVariable Long userId) {
+        return badgeService.getUserBadges(userId);
+    }
+
+    //유저 뱃지 상태 업데이트
+    @PutMapping("/userbadge/{userBadgeId}")
+    public ResponseEntity<UserBadgeDTO> updateUserBadgeStatus(@PathVariable Long userBadgeId, @RequestBody UserBadgeDTO userBadgeDTO) {
+        UserBadgeDTO updatedUserBadge = badgeService.updateUserBadgeStatus(userBadgeId, userBadgeDTO.getIsAchieved());
+        return ResponseEntity.ok(updatedUserBadge);
     }
 }

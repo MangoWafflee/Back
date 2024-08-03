@@ -18,6 +18,7 @@ public class ChallengeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title; // 챌린지 제목
+    private String subTitle; // 챌린지 부제목
     private String content; // 챌린지 내용
     private LocalDate startDate; // 챌린지 시작 시간
     private LocalDate endDate; // 챌린지 종료 시간
