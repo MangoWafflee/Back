@@ -21,55 +21,6 @@ public class BadgeServiceImpl implements BadgeService {
     private final BadgeRepository badgeRepository;
     private final UserRepository userRepository;
 
-    //뱃지 생성
-    @Override
-    public BadgeDTO addBadge(BadgeDTO badgeDTO, Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저의 ID가 " + userId + "인 사용자를 찾을 수 없습니다"));
-        BadgeEntity badgeEntity = badgeRepository.save(badgeDTO.dtoToEntity());
-        badgeEntity.setUser(user);
-        badgeEntity = badgeRepository.save(badgeEntity);  // User 설정 후 다시 저장
-        log.info("뱃지가 생성되었습니다! 뱃지 제목 : {}", badgeDTO.getTitle());
-        return BadgeDTO.entityToDto(badgeEntity);
-    }
-
-    //뱃지 전체 조회
-    @Override
-    public List<BadgeDTO> getBadges() {
-        List<BadgeDTO> badges = badgeRepository.findAll().stream()
-                .map(BadgeDTO::entityToDto)
-                .collect(Collectors.toList());
-        if (badges.isEmpty()) {
-            log.info("뱃지가 없습니다.");
-        } else {
-            log.info("뱃지 조회 완료!");
-        }
-        return badges;
-    }
-
-    //해당 뱃지 조회
-    @Override
-    public BadgeDTO getBadgeById(Long id) {
-        BadgeEntity badgeEntity = badgeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("뱃지의 ID가 " + id + "인 뱃지를 찾을 수 없습니다"));
-        log.info("뱃지가 조회되었습니다! 뱃지 ID : {}", id);
-        return BadgeDTO.entityToDto(badgeEntity);
-    }
-
-    //해당 유저 전체 뱃지 조회
-    @Override
-    public List<BadgeDTO> getUserBadges(Long userId) {
-        List<BadgeDTO> userBadges = badgeRepository.findByUserId(userId).stream()
-                .map(BadgeDTO::entityToDto)
-                .collect(Collectors.toList());
-        if (userBadges.isEmpty()) {
-            log.info("유저 ID가 {}의 뱃지가 없습니다.", userId);
-        } else {
-            log.info("유저 ID가 {}의 뱃지 조회 완료!", userId);
-        }
-        return userBadges;
-    }
-
     //유저 뱃지 상태 업데이트
     @Override
     public BadgeDTO updateUserBadgeStatus(Long badgeId, StatusEnum status) {

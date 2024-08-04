@@ -51,11 +51,11 @@ public class UserServiceImpl implements UserService {
     private final KakaoOAuthProperties kakaoOAuthProperties;
     private final BadgeRepository badgeRepository;
 
-    //뱃지 기본 값
+    //뱃지 데이터
     private void createDefaultBadges(UserEntity user) {
         List<Integer> smileCounts = List.of(1, 5, 10, 20, 30, 50, 100, 300, 500);
         List<BadgeEntity> defaultBadges = IntStream.rangeClosed(1, 9)
-                .mapToObj(i -> new BadgeEntity(null, i + "일 웃기", StatusEnum.진행중, null, smileCounts.get(i - 1), user))
+                .mapToObj(i -> new BadgeEntity(null, smileCounts.get(i - 1) + "번 웃기", StatusEnum.진행중, null, smileCounts.get(i - 1), user))
                 .collect(Collectors.toList());
         badgeRepository.saveAll(defaultBadges);
     }
@@ -73,8 +73,6 @@ public class UserServiceImpl implements UserService {
         userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         UserEntity savedUser = userRepository.save(userEntity);
         logger.info("회원가입 완료! " + userEntity);
-
-        // 유저 생성 시 기본 뱃지 생성
         createDefaultBadges(savedUser);
 
         return UserDTO.entityToDto(savedUser);
@@ -328,6 +326,7 @@ public class UserServiceImpl implements UserService {
 
             UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
 
+            boolean isNewUser = false;
             if (userEntity == null) {
                 userEntity = UserEntity.builder()
                         .uid(uid)
@@ -337,13 +336,16 @@ public class UserServiceImpl implements UserService {
                         .provider("kakao")
                         .build();
                 userRepository.save(userEntity);
+                isNewUser = true;
             } else {
                 userEntity.setName(name);
                 userEntity.setEmail(email);
                 userRepository.save(userEntity);
             }
-            //카카오 로그인 유저에 대한 기본 뱃지 생성
-            createDefaultBadges(userEntity);
+
+            if (isNewUser) {
+                createDefaultBadges(userEntity);
+            }
 
             String token = jwtTokenProvider.generateToken(uid);
             logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
