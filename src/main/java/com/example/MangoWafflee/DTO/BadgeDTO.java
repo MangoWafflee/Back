@@ -11,17 +11,15 @@ import lombok.*;
 public class BadgeDTO {
     private Long id;
     private String title;
-    private String content;
 
     public static BadgeDTO entityToDto(BadgeEntity badgeEntity) {
         return new BadgeDTO(
                 badgeEntity.getId(),
-                badgeEntity.getTitle(),
-                badgeEntity.getContent()
+                badgeEntity.getTitle()
         );
     }
 
     public BadgeEntity dtoToEntity() {
-        return new BadgeEntity(id, title, content);
+        return new BadgeEntity(id, title);
     }
 }

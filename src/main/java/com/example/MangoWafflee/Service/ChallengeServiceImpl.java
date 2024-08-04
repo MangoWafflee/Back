@@ -1,9 +1,14 @@
 package com.example.MangoWafflee.Service;
 
 import com.example.MangoWafflee.DTO.ChallengeDTO;
+import com.example.MangoWafflee.DTO.UserChallengeDTO;
 import com.example.MangoWafflee.Entity.ChallengeEntity;
+import com.example.MangoWafflee.Entity.UserChallengeEntity;
+import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Enum.StatusEnum;
 import com.example.MangoWafflee.Repository.ChallengeRepository;
+import com.example.MangoWafflee.Repository.UserChallengeRepository;
+import com.example.MangoWafflee.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeRepository challengeRepository;
+    private final UserChallengeRepository userChallengeRepository;
+    private final UserRepository userRepository;
 
     //현재 시간에 따른 챌린지 상태 계산 메서드
     private StatusEnum calculateStatus(LocalDate startDate, LocalDate endDate) {
@@ -27,6 +34,22 @@ public class ChallengeServiceImpl implements ChallengeService {
             return StatusEnum.진행완료;
         } else {
             return StatusEnum.진행중;
+        }
+    }
+
+    //유저 챌린지 수행 자동 메서드
+    private int getChallengeGoal(Long challengeId) {
+        switch (challengeId.intValue()) {
+            case 1:
+                return 7;
+            case 2:
+                return 14;
+            case 3:
+                return 20;
+            case 4:
+                return 7;
+            default:
+                return Integer.MAX_VALUE;
         }
     }
 
@@ -55,6 +78,14 @@ public class ChallengeServiceImpl implements ChallengeService {
                 .collect(Collectors.toList());
     }
 
+    //해당 챌린지 조회
+    @Override
+    public ChallengeDTO getChallengeById(Long challengeId) {
+        ChallengeEntity challengeEntity = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("챌린지 ID가 " + challengeId + "인 챌린지를 찾을 수 없습니다."));
+        return ChallengeDTO.entityToDto(challengeEntity);
+    }
+
     //챌린지 상태 업데이트
     @Override
     public ChallengeDTO updateChallengeStatus(Long challengeId, StatusEnum status) {
@@ -66,5 +97,86 @@ public class ChallengeServiceImpl implements ChallengeService {
         ChallengeEntity updatedChallenge = challengeRepository.save(challengeEntity);
         log.info("챌린지 ID {}의 상태가 {}로 업데이트되었습니다.", challengeId, status);
         return ChallengeDTO.entityToDto(updatedChallenge);
+    }
+
+    //유저 챌린지 참여
+    @Override
+    public UserChallengeDTO participateInChallenge(Long userId, Long challengeId, StatusEnum status) {
+        ChallengeEntity challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new RuntimeException("챌린지 ID가 " + challengeId + "인 챌린지를 찾을 수 없습니다."));
+
+        //챌린지가 진행완료 상태인 경우 참여 불가
+        if (challenge.getStatus() == StatusEnum.진행완료) {
+            throw new RuntimeException("이 챌린지는 진행이 완료되어 더이상 참여할 수 없습니다.");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 ID가 " + userId + "인 사용자를 찾을 수 없습니다."));
+
+        UserChallengeEntity userChallenge = UserChallengeEntity.builder()
+                .user(user)
+                .challenge(challenge)
+                .participating(status)
+                .build();
+
+        if (status == StatusEnum.참여) {
+            challenge.setCount(challenge.getCount() + 1);
+            challenge.setTotalAttempts(challenge.getTotalAttempts() + 1);
+            challengeRepository.save(challenge);
+        }
+
+        UserChallengeEntity createdUserChallenge = userChallengeRepository.save(userChallenge);
+        log.info("유저 ID {}가 챌린지 ID {}에 참여했습니다.", userId, challengeId);
+
+        return UserChallengeDTO.entityToDto(createdUserChallenge);
+    }
+
+    //유저 챌린지 성공 여부
+    @Override
+    public UserChallengeDTO updateUserChallengeStatus(Long userChallengeId, StatusEnum status) {
+        UserChallengeEntity userChallenge = userChallengeRepository.findById(userChallengeId)
+                .orElseThrow(() -> new RuntimeException("UserChallenge ID가 " + userChallengeId + "인 챌린지를 찾을 수 없습니다."));
+
+        //해당 유저에 대하여 한 번 성공했으면 CompletedAttempts 필드를 더 이상 증가시키지 않음
+        if (userChallenge.getSuccessStatus() != StatusEnum.성공) {
+            userChallenge.setSuccessStatus(status);
+
+            if (status == StatusEnum.성공) {
+                ChallengeEntity challenge = userChallenge.getChallenge();
+                challenge.setCompletedAttempts(challenge.getCompletedAttempts() + 1);
+                challengeRepository.save(challenge);
+            }
+        }
+
+        UserChallengeEntity updatedUserChallenge = userChallengeRepository.save(userChallenge);
+        log.info("유저 챌린지 ID: {}의 상태가 {}로 업데이트되었습니다.", userChallengeId, status);
+
+        return UserChallengeDTO.entityToDto(updatedUserChallenge);
+    }
+
+    //유저 챌린지 수행 자동 메서드
+    @Override
+    public void checkAndUpdateChallengeStatus(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저 ID가 " + userId + "인 사용자를 찾을 수 없습니다."));
+
+        List<UserChallengeEntity> userChallenges = userChallengeRepository.findByUserId(userId);
+        for (UserChallengeEntity userChallenge : userChallenges) {
+            if (user.getSmilecount() >= getChallengeGoal(userChallenge.getChallenge().getId()) && userChallenge.getSuccessStatus() != StatusEnum.성공) {
+                userChallenge.setSuccessStatus(StatusEnum.성공);
+                userChallengeRepository.save(userChallenge);
+                ChallengeEntity challenge = userChallenge.getChallenge();
+                challenge.setCompletedAttempts(challenge.getCompletedAttempts() + 1);
+                challengeRepository.save(challenge);
+            }
+        }
+    }
+
+    //유저 챌린지 조회
+    @Override
+    public List<UserChallengeDTO> getUserChallenges(Long userId) {
+        return userChallengeRepository.findByUserId(userId).stream()
+                .map(UserChallengeDTO::entityToDto)
+                .collect(Collectors.toList());
     }
 }

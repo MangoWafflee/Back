@@ -15,6 +15,7 @@ import java.time.LocalDate;
 public class ChallengeDTO {
     private Long id;
     private String title;
+    private String subTitle;
     private String content;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -27,6 +28,7 @@ public class ChallengeDTO {
         return new ChallengeDTO(
                 challengeEntity.getId(),
                 challengeEntity.getTitle(),
+                challengeEntity.getSubTitle(),
                 challengeEntity.getContent(),
                 challengeEntity.getStartDate(),
                 challengeEntity.getEndDate(),
@@ -38,6 +40,6 @@ public class ChallengeDTO {
     }
 
     public ChallengeEntity dtoToEntity() {
-        return new ChallengeEntity(id, title, content, startDate, endDate, status, count, totalAttempts, completedAttempts);
+        return new ChallengeEntity(id, title, subTitle, content, startDate, endDate, status, count, totalAttempts, completedAttempts);
     }
 }

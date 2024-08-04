@@ -20,6 +20,7 @@ public class UserChallengeEntity {
     private Long id;
     private StatusEnum participating; // 챌린지 참여 여부
     private StatusEnum successStatus; // 챌린지 성공 여부
+    private int completedAttempts; // 챌린지 해당 유저가 수행한 횟수 (수행한? 수행을 완료한?) (너도 뭐냐 진짜)
 
     @ManyToOne
     @JoinColumn(name = "user_id")
