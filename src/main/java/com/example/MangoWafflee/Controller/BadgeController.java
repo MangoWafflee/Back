@@ -1,8 +1,6 @@
 package com.example.MangoWafflee.Controller;
 
 import com.example.MangoWafflee.DTO.BadgeDTO;
-import com.example.MangoWafflee.DTO.UserBadgeDTO;
-import com.example.MangoWafflee.Enum.StatusEnum;
 import com.example.MangoWafflee.Service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +15,10 @@ public class BadgeController {
     private final BadgeService badgeService;
 
     //뱃지 생성
-    @PostMapping
-    public BadgeDTO addBadge(@RequestBody BadgeDTO badgeDTO) {
-        return badgeService.addBadge(badgeDTO);
+    @PostMapping("/add/{userId}")
+    public ResponseEntity<BadgeDTO> addBadge(@RequestBody BadgeDTO badgeDTO, @PathVariable Long userId) {
+        BadgeDTO createdBadge = badgeService.addBadge(badgeDTO, userId);
+        return ResponseEntity.ok(createdBadge);
     }
 
     //뱃지 전체 조회
@@ -34,22 +33,16 @@ public class BadgeController {
         return badgeService.getBadgeById(id);
     }
 
-    //유저 뱃지 생성
-    @PostMapping("/userbadge")
-    public UserBadgeDTO createUserBadge(@RequestBody UserBadgeDTO userBadgeDTO) {
-        return badgeService.createUserBadge(userBadgeDTO);
-    }
-
     //해당 유저 전체 뱃지 조회
-    @GetMapping("/userbadges/{userId}")
-    public List<UserBadgeDTO> getUserBadges(@PathVariable Long userId) {
+    @GetMapping("/user/{userId}")
+    public List<BadgeDTO> getUserBadges(@PathVariable Long userId) {
         return badgeService.getUserBadges(userId);
     }
 
     //유저 뱃지 상태 업데이트
-    @PutMapping("/userbadge/{userBadgeId}")
-    public ResponseEntity<UserBadgeDTO> updateUserBadgeStatus(@PathVariable Long userBadgeId, @RequestBody UserBadgeDTO userBadgeDTO) {
-        UserBadgeDTO updatedUserBadge = badgeService.updateUserBadgeStatus(userBadgeId, userBadgeDTO.getIsAchieved());
+    @PutMapping("/user/{badgeId}")
+    public ResponseEntity<BadgeDTO> updateUserBadgeStatus(@PathVariable Long badgeId, @RequestBody BadgeDTO badgeDTO) {
+        BadgeDTO updatedUserBadge = badgeService.updateUserBadgeStatus(badgeId, badgeDTO.getIsAchieved());
         return ResponseEntity.ok(updatedUserBadge);
     }
 }

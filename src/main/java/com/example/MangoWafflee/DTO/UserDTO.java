@@ -1,7 +1,12 @@
 package com.example.MangoWafflee.DTO;
 
+import com.example.MangoWafflee.Entity.BadgeEntity;
 import com.example.MangoWafflee.Entity.UserEntity;
 import lombok.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Collections;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,8 +23,12 @@ public class UserDTO {
     private String email;
     private String provider;
     private int smilecount;
+    private List<BadgeDTO> badges;
 
     public static UserDTO entityToDto(UserEntity userEntity) {
+        List<BadgeDTO> badgeDTOs = userEntity.getBadges() != null
+                ? userEntity.getBadges().stream().map(BadgeDTO::entityToDto).collect(Collectors.toList())
+                : Collections.emptyList();
         return new UserDTO(
                 userEntity.getId(),
                 userEntity.getUid(),
@@ -29,12 +38,17 @@ public class UserDTO {
                 userEntity.getImage(),
                 userEntity.getEmail(),
                 userEntity.getProvider(),
-                userEntity.getSmilecount()
+                userEntity.getSmilecount(),
+                badgeDTOs
         );
     }
 
     public UserEntity dtoToEntity() {
-        return new UserEntity(id, uid, password, name, nickname, image, email, provider, smilecount);
+        UserEntity userEntity = new UserEntity(id, uid, password, name, nickname, image, email, provider, smilecount);
+        List<BadgeEntity> badgeEntities = badges != null
+                ? badges.stream().map(BadgeDTO::dtoToEntity).collect(Collectors.toList())
+                : Collections.emptyList();
+        userEntity.setBadges(badgeEntities);
+        return userEntity;
     }
 }
-

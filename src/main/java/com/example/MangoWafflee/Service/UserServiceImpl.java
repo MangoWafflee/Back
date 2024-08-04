@@ -2,7 +2,10 @@ package com.example.MangoWafflee.Service;
 
 import com.example.MangoWafflee.DTO.JWTDTO;
 import com.example.MangoWafflee.DTO.UserDTO;
+import com.example.MangoWafflee.Entity.BadgeEntity;
 import com.example.MangoWafflee.Entity.UserEntity;
+import com.example.MangoWafflee.Enum.StatusEnum;
+import com.example.MangoWafflee.Repository.BadgeRepository;
 import com.example.MangoWafflee.Repository.UserRepository;
 import com.example.MangoWafflee.Global.Config.JWT.JwtTokenProvider;
 import com.example.MangoWafflee.Global.Config.KakaoOAuthProperties;
@@ -30,6 +33,10 @@ import java.util.Map;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -42,19 +49,34 @@ public class UserServiceImpl implements UserService {
     private final Storage storage;
     private final RestTemplate restTemplate;
     private final KakaoOAuthProperties kakaoOAuthProperties;
+    private final BadgeRepository badgeRepository;
+
+    //뱃지 기본 값
+    private void createDefaultBadges(UserEntity user) {
+        List<Integer> smileCounts = List.of(1, 5, 10, 20, 30, 50, 100, 300, 500);
+        List<BadgeEntity> defaultBadges = IntStream.rangeClosed(1, 9)
+                .mapToObj(i -> new BadgeEntity(null, i + "일 웃기", StatusEnum.진행중, null, smileCounts.get(i - 1), user))
+                .collect(Collectors.toList());
+        badgeRepository.saveAll(defaultBadges);
+    }
 
     //회원가입
     @Override
     public UserDTO createUser(UserDTO userDTO) {
-        if ("중복된 아이디가 존재합니다.".equals(isNicknameDuplicate(userDTO.getUid()))) {
+        if ("중복된 아이디가 존재합니다.".equals(isUidDuplicate(userDTO.getUid()).get("message"))) {
             throw new IllegalArgumentException("중복된 아이디가 존재합니다");
-        } else if ("해당 닉네임은 존재합니다.".equals(isNicknameDuplicate(userDTO.getNickname()))) {
+        } else if ("해당 닉네임은 존재합니다.".equals(isNicknameDuplicate(userDTO.getNickname()).get("message"))) {
             throw new IllegalArgumentException("닉네임이 이미 존재합니다");
         }
+
         UserEntity userEntity = userDTO.dtoToEntity();
         userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         UserEntity savedUser = userRepository.save(userEntity);
         logger.info("회원가입 완료! " + userEntity);
+
+        // 유저 생성 시 기본 뱃지 생성
+        createDefaultBadges(savedUser);
+
         return UserDTO.entityToDto(savedUser);
     }
 
@@ -66,6 +88,9 @@ public class UserServiceImpl implements UserService {
         }
         UserEntity userEntity = userRepository.findByUid(uid)
                 .orElseThrow(() -> new RuntimeException("유저의 uid가 " + uid + "인 사용자를 찾을 수 없습니다"));
+        if (userEntity.getBadges() == null || userEntity.getBadges().isEmpty()) {
+            createDefaultBadges(userEntity);
+        }
         return UserDTO.entityToDto(userEntity);
     }
 
@@ -195,7 +220,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Long getTokenRemainingTime(UserDetails userDetails) {
         String uid = userDetails.getUsername();
-        String token = jwtTokenProvider.getActiveToken(uid); // 활성화된 토큰을 가져옵니다.
+        String token = jwtTokenProvider.getActiveToken(uid);
         if (token == null || jwtTokenProvider.isTokenInvalid(token)) {
             throw new IllegalArgumentException("유효하지 않거나 만료된 토큰입니다");
         }
@@ -317,6 +342,8 @@ public class UserServiceImpl implements UserService {
                 userEntity.setEmail(email);
                 userRepository.save(userEntity);
             }
+            //카카오 로그인 유저에 대한 기본 뱃지 생성
+            createDefaultBadges(userEntity);
 
             String token = jwtTokenProvider.generateToken(uid);
             logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
