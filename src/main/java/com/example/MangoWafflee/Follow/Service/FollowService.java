@@ -63,7 +63,7 @@ public class FollowService {
         return friendship.isPresent();
     }
 
-    public ResponseEntity<?> respondToRequest(Long requestId, FollowRequestStatus status) { // 팔로우 수락
+    public ResponseEntity<?> respondToRequest(Long requestId, FollowRequestStatus status, String receiverId) { // 팔로우 수락
         Optional<FollowRequest> optionalRequest = followRequestRepository.findById(requestId);
 
         if (optionalRequest.isEmpty()) { // case 1. 팔로우 요청 아이디 유효 검증
@@ -78,6 +78,10 @@ public class FollowService {
             FollowRequestStatus.valueOf(status.name());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status: status 가 REJECTED 또는 ACCEPTED 인지 확인하세요.");
+        }
+
+        if (!request.getReceiver().getId().toString().equals(receiverId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("수락 권한이 없는 요청입니다.");
         }
 
         // 팔로우 요청 거절
@@ -111,4 +115,15 @@ public class FollowService {
 
         return followRequestRepository.findAllBySenderId(senderId);
     }
+
+    public Long getSenderIdByRequestId(Long requestId) {
+        Optional<FollowRequest> followRequest = followRequestRepository.findById(requestId);
+
+        if (followRequest.isPresent()) {
+            return followRequest.get().getSender().getId();
+        } else {
+            throw new IllegalArgumentException("해당 ID로 팔로우 요청을 찾을 수 없습니다.");
+        }
+    }
+
 }
