@@ -1,6 +1,6 @@
 package com.example.MangoWafflee.Enum;
 
-public enum StatusEnum {
+public enum     StatusEnum {
     성공,
     실패,
     대기중,

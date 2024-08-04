@@ -11,6 +11,8 @@ import com.example.MangoWafflee.Repository.UserChallengeRepository;
 import com.example.MangoWafflee.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,6 +26,24 @@ public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final UserChallengeRepository userChallengeRepository;
     private final UserRepository userRepository;
+
+    //챌린지 데이터
+    @Bean
+    public CommandLineRunner initChallenges() {
+        return args -> {
+            List<ChallengeEntity> challenges = List.of(
+                    new ChallengeEntity(null, "[8월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "test"),
+                    new ChallengeEntity(null, "[8월] 14일 웃기 챌린지", "이번 달 14일 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "test"),
+                    new ChallengeEntity(null, "[8월] 20일 웃기 챌린지", "이번 달 20일 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "test"),
+                    new ChallengeEntity(null, "[7월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 0, 0, "test")
+            );
+            for (ChallengeEntity challenge : challenges) {
+                if (challengeRepository.findByTitle(challenge.getTitle()).isEmpty()) {
+                    challengeRepository.save(challenge);
+                }
+            }
+        };
+    }
 
     //현재 시간에 따른 챌린지 상태 계산 메서드
     private StatusEnum calculateStatus(LocalDate startDate, LocalDate endDate) {
@@ -177,6 +197,33 @@ public class ChallengeServiceImpl implements ChallengeService {
     public List<UserChallengeDTO> getUserChallenges(Long userId) {
         return userChallengeRepository.findByUserId(userId).stream()
                 .map(UserChallengeDTO::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    //진행중인 챌린지만 조회 (상황에 따라 해당 메서드에 Enum값 변경하거나 추가할 것)
+    @Override
+    public List<ChallengeDTO> getOngoingChallenges() {
+        return challengeRepository.findAll().stream()
+                .filter(challenge -> challenge.getStatus() == StatusEnum.진행중)
+                .map(ChallengeDTO::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    //진행완료인 챌린지만 조회
+    @Override
+    public List<ChallengeDTO> getCompletedChallenges() {
+        return challengeRepository.findAll().stream()
+                .filter(challenge -> challenge.getStatus() == StatusEnum.진행완료)
+                .map(ChallengeDTO::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    //대기중인 챌린지만 조회
+    @Override
+    public List<ChallengeDTO> getPendingChallenges() {
+        return challengeRepository.findAll().stream()
+                .filter(challenge -> challenge.getStatus() == StatusEnum.대기중)
+                .map(ChallengeDTO::entityToDto)
                 .collect(Collectors.toList());
     }
 }

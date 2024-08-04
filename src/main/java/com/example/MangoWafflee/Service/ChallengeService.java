@@ -15,4 +15,7 @@ public interface ChallengeService {
     UserChallengeDTO updateUserChallengeStatus(Long userChallengeId, StatusEnum status);
     void checkAndUpdateChallengeStatus(Long userId);
     List<UserChallengeDTO> getUserChallenges(Long userId);
+    List<ChallengeDTO> getOngoingChallenges();
+    List<ChallengeDTO> getCompletedChallenges();
+    List<ChallengeDTO> getPendingChallenges();
 }

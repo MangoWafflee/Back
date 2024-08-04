@@ -63,4 +63,25 @@ public class ChallengeController {
         List<UserChallengeDTO> userChallenges = challengeService.getUserChallenges(userId);
         return ResponseEntity.ok(userChallenges);
     }
+
+    //진행중인 챌린지만 조회
+    @GetMapping("/going")
+    public ResponseEntity<List<ChallengeDTO>> getOngoingChallenges() {
+        List<ChallengeDTO> ongoingChallenges = challengeService.getOngoingChallenges();
+        return ResponseEntity.ok(ongoingChallenges);
+    }
+
+    //진행완료인 챌린지만 조회
+    @GetMapping("/complete")
+    public ResponseEntity<List<ChallengeDTO>> getCompletedChallenges() {
+        List<ChallengeDTO> completedChallenges = challengeService.getCompletedChallenges();
+        return ResponseEntity.ok(completedChallenges);
+    }
+
+    //대기중인 챌린지만 조회
+    @GetMapping("/pending")
+    public ResponseEntity<List<ChallengeDTO>> getPendingChallenges() {
+        List<ChallengeDTO> pendingChallenges = challengeService.getPendingChallenges();
+        return ResponseEntity.ok(pendingChallenges);
+    }
 }
