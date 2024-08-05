@@ -7,6 +7,7 @@ import com.example.MangoWafflee.Entity.UserChallengeEntity;
 import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Enum.StatusEnum;
 import com.example.MangoWafflee.Repository.ChallengeRepository;
+import com.example.MangoWafflee.Repository.SmileRepository;
 import com.example.MangoWafflee.Repository.UserChallengeRepository;
 import com.example.MangoWafflee.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +27,17 @@ public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final UserChallengeRepository userChallengeRepository;
     private final UserRepository userRepository;
+    private final SmileRepository smileRepository;
 
     //챌린지 데이터
     @Bean
     public CommandLineRunner initChallenges() {
         return args -> {
             List<ChallengeEntity> challenges = List.of(
-                    new ChallengeEntity(null, "[8월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_7.png"),
-                    new ChallengeEntity(null, "[8월] 14일 웃기 챌린지", "이번 달 14일 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_14.png"),
-                    new ChallengeEntity(null, "[8월] 20일 웃기 챌린지", "이번 달 20일 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_20.png"),
-                    new ChallengeEntity(null, "[7월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_07_7.png")
+                    new ChallengeEntity(null, "[8월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 7, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_7.png"),
+                    new ChallengeEntity(null, "[8월] 14일 웃기 챌린지", "이번 달 14일 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 14, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_14.png"),
+                    new ChallengeEntity(null, "[8월] 20일 웃기 챌린지", "이번 달 20일 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 20, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_20.png"),
+                    new ChallengeEntity(null, "[7월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 7, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_07_7.png")
             );
             for (ChallengeEntity challenge : challenges) {
                 if (challengeRepository.findByTitle(challenge.getTitle()).isEmpty()) {
@@ -71,6 +73,13 @@ public class ChallengeServiceImpl implements ChallengeService {
             default:
                 return Integer.MAX_VALUE;
         }
+    }
+
+    //해당 유저가 챌린지 참여 이후의 smile 테이블 인스턴스 개수를 계산하는 메서드
+    public int calculateCompletedAttempts(UserEntity user, LocalDate participationDate) {
+        int count = smileRepository.countByUserAndDateAfter(user, participationDate);
+        log.info("User ID: {}, Participation Date: {}, Completed Attempts: {}", user.getId(), participationDate, count);
+        return count;
     }
 
     //챌린지 생성
@@ -141,19 +150,29 @@ public class ChallengeServiceImpl implements ChallengeService {
             throw new RuntimeException("이미 참여중인 챌린지입니다.");
         }
 
+        //참여 날짜를 현재 날짜로 정의
+        LocalDate participationDate = LocalDate.now();
+
         UserChallengeEntity userChallenge = UserChallengeEntity.builder()
                 .user(user)
                 .challenge(challenge)
                 .participating(StatusEnum.참여)
+                .participationDate(participationDate)
+                .completedAttempts(0)
                 .build();
 
-        if (status == StatusEnum.참여) {
-            challenge.setCount(challenge.getCount() + 1);
-            challenge.setTotalAttempts(challenge.getTotalAttempts() + 1);
-            challengeRepository.save(challenge);
-        }
+        challenge.setCount(challenge.getCount() + 1);
+        challengeRepository.save(challenge);
 
         UserChallengeEntity createdUserChallenge = userChallengeRepository.save(userChallenge);
+
+        int completedAttempts = smileRepository.countByUserAndDateAfter(user, participationDate);
+        log.info("유저 ID {}의 완료된 시도 횟수 계산: {}", userId, completedAttempts);
+        createdUserChallenge.setCompletedAttempts(completedAttempts);
+        createdUserChallenge = userChallengeRepository.save(createdUserChallenge);
+
+        log.info("저장 후 UserChallenge: {}", createdUserChallenge);
+
         log.info("유저 ID {}가 챌린지 ID {}에 참여했습니다.", userId, challengeId);
 
         return UserChallengeDTO.entityToDto(createdUserChallenge);
@@ -190,12 +209,17 @@ public class ChallengeServiceImpl implements ChallengeService {
 
         List<UserChallengeEntity> userChallenges = userChallengeRepository.findByUserId(userId);
         for (UserChallengeEntity userChallenge : userChallenges) {
-            if (user.getSmilecount() >= getChallengeGoal(userChallenge.getChallenge().getId()) && userChallenge.getSuccessStatus() != StatusEnum.성공) {
+            int completedAttempts = smileRepository.countByUserAndDateAfter(user, userChallenge.getParticipationDate());
+            log.info("유저 ID {}의 완료된 시도 횟수 계산 : {}", userId, completedAttempts);
+            userChallenge.setCompletedAttempts(completedAttempts);
+            if (userChallenge.getCompletedAttempts() >= getChallengeGoal(userChallenge.getChallenge().getId()) && userChallenge.getSuccessStatus() != StatusEnum.성공) {
                 userChallenge.setSuccessStatus(StatusEnum.성공);
                 userChallengeRepository.save(userChallenge);
                 ChallengeEntity challenge = userChallenge.getChallenge();
                 challenge.setCompletedAttempts(challenge.getCompletedAttempts() + 1);
                 challengeRepository.save(challenge);
+            } else {
+                userChallengeRepository.save(userChallenge);
             }
         }
     }

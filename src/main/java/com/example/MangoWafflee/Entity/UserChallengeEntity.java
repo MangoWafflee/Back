@@ -20,7 +20,8 @@ public class UserChallengeEntity {
     private Long id;
     private StatusEnum participating; // 챌린지 참여 여부
     private StatusEnum successStatus; // 챌린지 성공 여부
-    private int completedAttempts; // 챌린지 해당 유저가 수행한 횟수 (수행한? 수행을 완료한?) (너도 뭐냐 진짜)
+    private int completedAttempts; // 챌린지를 시작한 이후부터의 스마일 카운트 값
+    private LocalDate participationDate; // 챌린지 참여 날짜 (누적 방지를 위해)
 
     @ManyToOne
     @JoinColumn(name = "user_id")
