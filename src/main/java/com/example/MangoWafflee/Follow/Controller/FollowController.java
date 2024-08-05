@@ -48,23 +48,36 @@ public class FollowController {
     }
 
     @GetMapping("/received")
-    public List<FollowRequest> getReceivedFollowRequests(@RequestParam Long userId) {
-        return followRequestRepository.findByReceiverId(userId);
+    public ResponseEntity<?> getReceivedFollowRequests(@RequestParam Long userId) {
+        try {
+            List<FollowRequestDTO> receivedRequests = followService.getReceivedFollowRequests(userId);
+
+            if (receivedRequests.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body("받은 친구 추가 요청 내역이 비어있습니다.");
+            }
+
+            return ResponseEntity.ok(receivedRequests);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("/response")
     public ResponseEntity<?> respondToRequest(@RequestBody FollowResponseDTO followResponseDTO) {
-        return followService.respondToRequest(followResponseDTO.getRequestId(), followResponseDTO.getStatus());
+        try {
+            followService.respondToRequest(followResponseDTO);
+            return ResponseEntity.ok("팔로우 요청에 대한 응답이 처리완료");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
     }
 
     @GetMapping("/findRequestId/{senderId}")
     public ResponseEntity<?> findRequestId(@PathVariable Long senderId) {
         try {
-            List<FollowRequest> sentRequests = followService.getSentFollowRequests(senderId);
-
-            if (sentRequests == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("친구 추가 요청 내역을 찾을 수 없습니다.");
-            }
+            List<FollowRequestDTO> sentRequests = followService.getSentFollowRequests(senderId);
 
             if (sentRequests.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body("친구 추가 요청 내역이 비어있습니다.");

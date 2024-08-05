@@ -1,6 +1,8 @@
 package com.example.MangoWafflee.Follow.Service;
 
 import com.example.MangoWafflee.Entity.UserEntity;
+import com.example.MangoWafflee.Follow.DTO.FollowRequestDTO;
+import com.example.MangoWafflee.Follow.DTO.FollowResponseDTO;
 import com.example.MangoWafflee.Follow.Entity.FollowRequest;
 import com.example.MangoWafflee.Follow.Entity.FollowRequestStatus;
 import com.example.MangoWafflee.Follow.Entity.Friendship;
@@ -75,37 +77,33 @@ public class FollowService {
         return friendship.isPresent();
     }
 
-    public ResponseEntity<?> respondToRequest(Long requestId, FollowRequestStatus status) { // 팔로우 수락
-        Optional<FollowRequest> optionalRequest = followRequestRepository.findById(requestId);
+    public void respondToRequest(FollowResponseDTO followResponseDTO) {
+        Long requestId = followResponseDTO.getRequestId();
+        FollowRequestStatus status = followResponseDTO.getStatus();
 
-        if (optionalRequest.isEmpty()) { // case 1. 팔로우 요청 아이디 유효 검증
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("일치하는 requestId 가 없습니다.");
-        }
-        FollowRequest request = optionalRequest.get();
+        FollowRequest request = followRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("일치하는 requestId가 없습니다."));
 
-        if (status == null) { // case 2. status 유효성 체크
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status: status 는 null 일 수 없습니다.");
+        if (status == null) {
+            throw new IllegalArgumentException("Invalid status: status는 null일 수 없습니다.");
         }
+
         try {
             FollowRequestStatus.valueOf(status.name());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid status: status 가 REJECTED 또는 ACCEPTED 인지 확인하세요.");
+            throw new IllegalArgumentException("Invalid status: status가 REJECTED 또는 ACCEPTED인지 확인하세요.");
         }
 
-        // 팔로우 요청 거절
         if (status == FollowRequestStatus.REJECTED) {
             followRequestRepository.delete(request);
-            return ResponseEntity.status(HttpStatus.OK).body("팔로우를 거절합니다. 팔로우 요청을 삭제합니다.");
-        }
-
-        // 팔로우 요청 수락 => 친구 맺기
-        if (status == FollowRequestStatus.ACCEPTED) {
+            throw new RuntimeException("팔로우를 거절합니다. 팔로우 요청을 삭제합니다.");
+        } else if (status == FollowRequestStatus.ACCEPTED) {
             createFriendship(request);
             followRequestRepository.delete(request);
-            return ResponseEntity.status(HttpStatus.OK).body("✨ 팔로우 수락 완료! 우리는 칭긔");
+            throw new RuntimeException("✨ 팔로우 수락 완료! 우리는 칭긔");
+        } else {
+            throw new IllegalArgumentException("Invalid status: status는 REJECTED 또는 ACCEPTED 값이어야 합니다.");
         }
-
-        return ResponseEntity.status(HttpStatus.OK).body("Invalid status: status 는 REJECTED 또는 ACCEPTED 값이여야 합니다.");
     }
 
     private void createFriendship(FollowRequest request) {
@@ -116,11 +114,25 @@ public class FollowService {
         friendshipRepository.save(friendship);
     }
 
-    public List<FollowRequest> getSentFollowRequests(Long senderId) {
+    public List<FollowRequestDTO> getSentFollowRequests(Long senderId) {
         if (!userRepository.existsById(senderId)) {
             throw new IllegalArgumentException("등록된 유저가 아닙니다.");
         }
 
-        return followRequestRepository.findAllBySenderId(senderId);
+        List<FollowRequest> followRequests = followRequestRepository.findAllBySenderId(senderId);
+        return followRequests.stream()
+                .map(FollowRequestDTO::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<FollowRequestDTO> getReceivedFollowRequests(Long receiverId) {
+        if (!userRepository.existsById(receiverId)) {
+            throw new IllegalArgumentException("등록된 유저가 아닙니다.");
+        }
+
+        List<FollowRequest> followRequests = followRequestRepository.findByReceiverId(receiverId);
+        return followRequests.stream()
+                .map(FollowRequestDTO::entityToDto)
+                .collect(Collectors.toList());
     }
 }
