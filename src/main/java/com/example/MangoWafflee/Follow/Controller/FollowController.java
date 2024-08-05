@@ -1,5 +1,6 @@
 package com.example.MangoWafflee.Follow.Controller;
 
+import com.example.MangoWafflee.DTO.UserDTO;
 import com.example.MangoWafflee.Entity.UserEntity;
 import com.example.MangoWafflee.Follow.DTO.FollowRequestDTO;
 import com.example.MangoWafflee.Follow.DTO.FollowResponseDTO;
@@ -16,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/follow")
@@ -82,9 +84,16 @@ public class FollowController {
             if (friends.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body("친구 목록이 비어있습니다.");
             }
-            return ResponseEntity.ok(friends);
+
+            //유저 리스트를 DTO 리스트로 변환
+            List<UserDTO> friendsDTO = friends.stream()
+                    .map(UserDTO::entityToDto)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(friendsDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 }
