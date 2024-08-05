@@ -317,12 +317,35 @@ public class UserServiceImpl implements UserService {
             String accessToken = getAccessToken(code);
             Map<String, Object> userInfo = getUserInfo(accessToken);
 
+            if (userInfo == null || userInfo.isEmpty()) {
+                throw new RuntimeException("사용자 정보가 비어있습니다.");
+            }
+
             String uid = String.valueOf(userInfo.get("id"));
+            if (uid == null) {
+                throw new RuntimeException("사용자 ID를 가져올 수 없습니다.");
+            }
+
+            @SuppressWarnings("unchecked")
             Map<String, Object> properties = (Map<String, Object>) userInfo.get("properties");
+            @SuppressWarnings("unchecked")
             Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account");
 
-            String name = (String) properties.get("nickname");
-            String email = (String) kakaoAccount.get("email");
+            String name = null;
+            if (properties != null) {
+                name = (String) properties.get("nickname");
+            }
+            if (name == null) {
+                name = "카카오사용자";
+            }
+
+            String email = null;
+            if (kakaoAccount != null) {
+                email = (String) kakaoAccount.get("email");
+            }
+            if (email == null) {
+                throw new RuntimeException("사용자 이메일을 가져올 수 없습니다.");
+            }
 
             UserEntity userEntity = userRepository.findByUid(uid).orElse(null);
 
@@ -350,6 +373,10 @@ public class UserServiceImpl implements UserService {
             String token = jwtTokenProvider.generateToken(uid);
             logger.info("카카오 로그인 성공! 새로운 토큰이 발급되었습니다");
             return new JWTDTO(token, UserDTO.entityToDto(userEntity));
+        } catch (HttpClientErrorException e) {
+            logger.error("카카오 API 호출 중 오류가 발생했습니다: {}", e.getMessage());
+            logger.error("응답 본문: {}", e.getResponseBodyAsString());
+            throw new RuntimeException("카카오 API 호출 중 오류가 발생했습니다.", e);
         } catch (Exception e) {
             logger.error("카카오 로그인 중 오류가 발생했습니다 (위치 : loginWithOAuth2) : {}", e.getMessage());
             throw new RuntimeException("카카오 로그인 중 오류가 발생했습니다. (위치 : loginWithOAuth2)", e);
