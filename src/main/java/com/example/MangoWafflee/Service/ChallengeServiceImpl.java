@@ -34,10 +34,10 @@ public class ChallengeServiceImpl implements ChallengeService {
     public CommandLineRunner initChallenges() {
         return args -> {
             List<ChallengeEntity> challenges = List.of(
-                    new ChallengeEntity(null, "[8월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 7, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_7.png"),
-                    new ChallengeEntity(null, "[8월] 14일 웃기 챌린지", "이번 달 14일 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 14, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_14.png"),
-                    new ChallengeEntity(null, "[8월] 20일 웃기 챌린지", "이번 달 20일 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 20, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_20.png"),
-                    new ChallengeEntity(null, "[7월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 7, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_07_7.png")
+                    new ChallengeEntity(null, "[8월] 7번 웃기 챌린지", "이번 달 7번 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7번 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 7, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_7.png"),
+                    new ChallengeEntity(null, "[8월] 14번 웃기 챌린지", "이번 달 14번 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14번 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 14, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_14.png"),
+                    new ChallengeEntity(null, "[8월] 20번 웃기 챌린지", "이번 달 20번 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20번 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 20, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_20.png"),
+                    new ChallengeEntity(null, "[7월] 7번 웃기 챌린지", "이번 달 7번 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7번 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 7, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_07_7.png")
             );
             for (ChallengeEntity challenge : challenges) {
                 if (challengeRepository.findByTitle(challenge.getTitle()).isEmpty()) {
