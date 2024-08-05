@@ -30,8 +30,14 @@ public class FollowService {
     private UserRepository userRepository;
 
     public FollowRequest sendFollowRequest(Long receiverId, UserDetails userDetails) {
-        //UserDetails에서 UserEntity로 끌고옴
-        UserEntity sender = (UserEntity) userDetails;
+        //인증된 유저가 아니라면 예외처리
+        if (userDetails == null) {
+            throw new RuntimeException("인증된 유저가 아닙니다.");
+        }
+        //인증된 사용자 조회
+        String username = userDetails.getUsername();
+        UserEntity sender = userRepository.findByUid(username)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + username + "인 사용자를 찾을 수 없습니다"));
         //인증된 사용자 정보 추출
         Long senderId = sender.getId();
 
