@@ -10,6 +10,7 @@ import com.example.MangoWafflee.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,12 @@ public class FollowService {
     @Autowired
     private UserRepository userRepository;
 
-    public FollowRequest sendFollowRequest(Long senderId, Long receiverId) { // 팔로우 요청
+    public FollowRequest sendFollowRequest(Long receiverId, UserDetails userDetails) {
+        //UserDetails에서 UserEntity로 끌고옴
+        UserEntity sender = (UserEntity) userDetails;
+        //인증된 사용자 정보 추출
+        Long senderId = sender.getId();
+
         if (senderId.equals(receiverId)) {
             throw new IllegalArgumentException("자기 자신에게 팔로우 요청을 보낼 수 없습니다.");
         }
@@ -39,8 +45,8 @@ public class FollowService {
             throw new RuntimeException("이 분은 당신의 친구입니다...");
         }
 
-        UserEntity sender = userRepository.findById(senderId).orElseThrow(() -> new RuntimeException("Sender not found"));
-        UserEntity receiver = userRepository.findById(receiverId).orElseThrow(() -> new RuntimeException("Receiver not found"));
+        UserEntity receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
         FollowRequest request = new FollowRequest();
         request.setSender(sender);

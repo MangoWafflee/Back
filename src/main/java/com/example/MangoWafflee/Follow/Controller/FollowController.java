@@ -10,7 +10,10 @@ import com.example.MangoWafflee.Follow.Service.FriendshipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 
 import java.util.List;
 
@@ -27,10 +30,14 @@ public class FollowController {
     private FollowRequestRepository followRequestRepository;
 
     @PostMapping("/request")
-    public ResponseEntity<?> sendFollowRequest(@RequestBody FollowRequestDTO followRequestDTO) {
+    public ResponseEntity<?> sendFollowRequest(@RequestBody FollowRequestDTO followRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            FollowRequest request = followService.sendFollowRequest(followRequestDTO.getSenderId(), followRequestDTO.getReceiverId());
-            return ResponseEntity.ok(request);
+            //DTO에서 수신인 정보를 추출하고 인증된 사용자 정보를 추출
+            FollowRequest request = followService.sendFollowRequest(followRequestDTO.getReceiverId(), userDetails);
+            //생성된 엔티티를 DTO 클래스 entityToDto 메서드로 DTO 변환
+            FollowRequestDTO responseDTO = FollowRequestDTO.entityToDto(request);
+            //변환된 DTO 값 반환
+            return ResponseEntity.ok(responseDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (RuntimeException e) {

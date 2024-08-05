@@ -4,9 +4,11 @@ import com.example.MangoWafflee.Entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity
