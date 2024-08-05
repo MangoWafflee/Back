@@ -5,6 +5,8 @@ import com.example.MangoWafflee.DTO.UserChallengeDTO;
 import com.example.MangoWafflee.Service.ChallengeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,8 +47,8 @@ public class ChallengeController {
 
     //유저 챌린지 참여
     @PostMapping("/userchallenge/participate")
-    public ResponseEntity<UserChallengeDTO> participateInChallenge(@RequestBody UserChallengeDTO userChallengeDTO) {
-        UserChallengeDTO userChallenge = challengeService.participateInChallenge(userChallengeDTO.getUser().getId(), userChallengeDTO.getChallenge().getId(), userChallengeDTO.getParticipating());
+    public ResponseEntity<UserChallengeDTO> participateInChallenge(@RequestBody UserChallengeDTO userChallengeDTO, @AuthenticationPrincipal UserDetails userDetails) {
+        UserChallengeDTO userChallenge = challengeService.participateInChallenge(userChallengeDTO.getUser().getId(), userChallengeDTO.getChallenge().getId(), userChallengeDTO.getParticipating(), userDetails);
         return ResponseEntity.ok(userChallenge);
     }
 

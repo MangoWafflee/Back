@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -130,7 +131,15 @@ public class ChallengeServiceImpl implements ChallengeService {
 
     //유저 챌린지 참여
     @Override
-    public UserChallengeDTO participateInChallenge(Long userId, Long challengeId, StatusEnum status) {
+    public UserChallengeDTO participateInChallenge(Long userId, Long challengeId, StatusEnum status, UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new RuntimeException("인증된 유저가 아닙니다.");
+        }
+
+        String username = userDetails.getUsername();
+        UserEntity user = userRepository.findByUid(username)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + username + "인 사용자를 찾을 수 없습니다"));
+
         ChallengeEntity challenge = challengeRepository.findById(challengeId)
                 .orElseThrow(() -> new RuntimeException("챌린지 ID가 " + challengeId + "인 챌린지를 찾을 수 없습니다."));
 
@@ -138,9 +147,6 @@ public class ChallengeServiceImpl implements ChallengeService {
         if (challenge.getStatus() == StatusEnum.진행완료) {
             throw new RuntimeException("이 챌린지는 진행이 완료되어 더이상 참여할 수 없습니다.");
         }
-
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저 ID가 " + userId + "인 사용자를 찾을 수 없습니다."));
 
         //이미 참여 중인 챌린지가 있는지 확인하는 boolean 값 정의
         boolean isAlreadyParticipating = userChallengeRepository.findByUserId(userId).stream()
