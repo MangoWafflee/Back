@@ -31,16 +31,18 @@ public class FollowService {
     @Autowired
     private UserRepository userRepository;
 
-    public FollowRequest sendFollowRequest(Long receiverId, UserDetails userDetails) {
-        //인증된 유저가 아니라면 예외처리
+    //토큰 인증 메서드 하나로 통합
+    private void validateAuthenticatedUser(UserDetails userDetails) {
         if (userDetails == null) {
             throw new RuntimeException("인증된 유저가 아닙니다.");
         }
-        //인증된 사용자 조회
+    }
+
+    public FollowRequest sendFollowRequest(Long receiverId, UserDetails userDetails) {
+        validateAuthenticatedUser(userDetails);
         String username = userDetails.getUsername();
         UserEntity sender = userRepository.findByUid(username)
                 .orElseThrow(() -> new RuntimeException("유저의 uid가 " + username + "인 사용자를 찾을 수 없습니다"));
-        //인증된 사용자 정보 추출
         Long senderId = sender.getId();
 
         if (senderId.equals(receiverId)) {
@@ -77,7 +79,8 @@ public class FollowService {
         return friendship.isPresent();
     }
 
-    public void respondToRequest(FollowResponseDTO followResponseDTO) {
+    public void respondToRequest(FollowResponseDTO followResponseDTO, UserDetails userDetails) {
+        validateAuthenticatedUser(userDetails);
         Long requestId = followResponseDTO.getRequestId();
         FollowRequestStatus status = followResponseDTO.getStatus();
 
@@ -114,10 +117,12 @@ public class FollowService {
         friendshipRepository.save(friendship);
     }
 
-    public List<FollowRequestDTO> getSentFollowRequests(Long senderId) {
-        if (!userRepository.existsById(senderId)) {
-            throw new IllegalArgumentException("등록된 유저가 아닙니다.");
-        }
+    public List<FollowRequestDTO> getSentFollowRequests(Long senderId, UserDetails userDetails) {
+        validateAuthenticatedUser(userDetails);
+
+        String username = userDetails.getUsername();
+        UserEntity user = userRepository.findByUid(username)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + username + "인 사용자를 찾을 수 없습니다"));
 
         List<FollowRequest> followRequests = followRequestRepository.findAllBySenderId(senderId);
         return followRequests.stream()
@@ -125,10 +130,12 @@ public class FollowService {
                 .collect(Collectors.toList());
     }
 
-    public List<FollowRequestDTO> getReceivedFollowRequests(Long receiverId) {
-        if (!userRepository.existsById(receiverId)) {
-            throw new IllegalArgumentException("등록된 유저가 아닙니다.");
-        }
+    public List<FollowRequestDTO> getReceivedFollowRequests(Long receiverId, UserDetails userDetails) {
+        validateAuthenticatedUser(userDetails);
+
+        String username = userDetails.getUsername();
+        UserEntity user = userRepository.findByUid(username)
+                .orElseThrow(() -> new RuntimeException("유저의 uid가 " + username + "인 사용자를 찾을 수 없습니다"));
 
         List<FollowRequest> followRequests = followRequestRepository.findByReceiverId(receiverId);
         return followRequests.stream()

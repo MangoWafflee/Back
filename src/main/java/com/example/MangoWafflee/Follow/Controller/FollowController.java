@@ -48,9 +48,9 @@ public class FollowController {
     }
 
     @GetMapping("/received")
-    public ResponseEntity<?> getReceivedFollowRequests(@RequestParam Long userId) {
+    public ResponseEntity<?> getReceivedFollowRequests(@RequestParam Long userId, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<FollowRequestDTO> receivedRequests = followService.getReceivedFollowRequests(userId);
+            List<FollowRequestDTO> receivedRequests = followService.getReceivedFollowRequests(userId, userDetails);
 
             if (receivedRequests.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body("받은 친구 추가 요청 내역이 비어있습니다.");
@@ -63,10 +63,10 @@ public class FollowController {
     }
 
     @PostMapping("/response")
-    public ResponseEntity<?> respondToRequest(@RequestBody FollowResponseDTO followResponseDTO) {
+    public ResponseEntity<?> respondToRequest(@RequestBody FollowResponseDTO followResponseDTO, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            followService.respondToRequest(followResponseDTO);
-            return ResponseEntity.ok("팔로우 요청에 대한 응답이 처리완료");
+            followService.respondToRequest(followResponseDTO, userDetails);
+            return ResponseEntity.ok("팔로우 요청에 대한 응답이 처리되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (RuntimeException e) {
@@ -75,9 +75,9 @@ public class FollowController {
     }
 
     @GetMapping("/findRequestId/{senderId}")
-    public ResponseEntity<?> findRequestId(@PathVariable Long senderId) {
+    public ResponseEntity<?> findRequestId(@PathVariable Long senderId, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<FollowRequestDTO> sentRequests = followService.getSentFollowRequests(senderId);
+            List<FollowRequestDTO> sentRequests = followService.getSentFollowRequests(senderId, userDetails);
 
             if (sentRequests.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body("친구 추가 요청 내역이 비어있습니다.");
@@ -90,9 +90,9 @@ public class FollowController {
     }
 
     @GetMapping("/list/{userId}")
-    public ResponseEntity<?> getFriends(@PathVariable Long userId) {
+    public ResponseEntity<?> getFriends(@PathVariable Long userId, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<UserEntity> friends = friendshipService.getFriends(userId);
+            List<UserEntity> friends = friendshipService.getFriends(userId, userDetails);
 
             if (friends.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.OK).body("친구 목록이 비어있습니다.");
@@ -108,5 +108,4 @@ public class FollowController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-
 }
