@@ -32,10 +32,10 @@ public class ChallengeServiceImpl implements ChallengeService {
     public CommandLineRunner initChallenges() {
         return args -> {
             List<ChallengeEntity> challenges = List.of(
-                    new ChallengeEntity(null, "[8월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "test"),
-                    new ChallengeEntity(null, "[8월] 14일 웃기 챌린지", "이번 달 14일 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "test"),
-                    new ChallengeEntity(null, "[8월] 20일 웃기 챌린지", "이번 달 20일 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "test"),
-                    new ChallengeEntity(null, "[7월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 0, 0, "test")
+                    new ChallengeEntity(null, "[8월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "8월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_7.png"),
+                    new ChallengeEntity(null, "[8월] 14일 웃기 챌린지", "이번 달 14일 웃어보세요.", "8월에는 챌린지를 통해 14번 웃어봐요. 이번 달에 14일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_14.png"),
+                    new ChallengeEntity(null, "[8월] 20일 웃기 챌린지", "이번 달 20일 웃어보세요.", "8월에는 챌린지를 통해 20번 웃어봐요. 이번 달에 20일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 8, 1), LocalDate.of(2024, 8, 31), StatusEnum.진행중, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_08_20.png"),
+                    new ChallengeEntity(null, "[7월] 7일 웃기 챌린지", "이번 달 7일 웃어보세요.", "7월에는 챌린지를 통해 7번 웃어봐요. 이번 달에 7일 웃고 챌린지를 성공해보세요!'", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 31), StatusEnum.진행완료, 0, 0, 0, "https://nongburang-images.s3.ap-northeast-2.amazonaws.com/challenge_24_07_7.png")
             );
             for (ChallengeEntity challenge : challenges) {
                 if (challengeRepository.findByTitle(challenge.getTitle()).isEmpty()) {
@@ -133,10 +133,18 @@ public class ChallengeServiceImpl implements ChallengeService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저 ID가 " + userId + "인 사용자를 찾을 수 없습니다."));
 
+        //이미 참여 중인 챌린지가 있는지 확인하는 boolean 값 정의
+        boolean isAlreadyParticipating = userChallengeRepository.findByUserId(userId).stream()
+                .anyMatch(userChallenge -> userChallenge.getChallenge().getId().equals(challengeId));
+
+        if (isAlreadyParticipating) {
+            throw new RuntimeException("이미 참여중인 챌린지입니다.");
+        }
+
         UserChallengeEntity userChallenge = UserChallengeEntity.builder()
                 .user(user)
                 .challenge(challenge)
-                .participating(status)
+                .participating(StatusEnum.참여)
                 .build();
 
         if (status == StatusEnum.참여) {
