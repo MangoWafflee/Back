@@ -346,7 +346,7 @@ public class UserServiceImpl implements UserService {
 
             String name = null;
             if (properties != null) {
-                name = (String) properties.get("nickname");
+                name = (String) properties.get("profile_nickname");
             }
             if (name == null) {
                 name = "카카오사용자";
