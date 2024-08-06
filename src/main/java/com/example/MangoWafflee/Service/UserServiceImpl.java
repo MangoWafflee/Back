@@ -348,12 +348,6 @@ public class UserServiceImpl implements UserService {
             if (properties != null) {
                 name = (String) properties.get("nickname");
             }
-            if (name == null && kakaoAccount != null) {
-                Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-                if (profile != null) {
-                    name = (String) profile.get("nickname");
-                }
-            }
             if (name == null) {
                 name = "카카오사용자";
             }
@@ -373,7 +367,6 @@ public class UserServiceImpl implements UserService {
                 userEntity = UserEntity.builder()
                         .uid(uid)
                         .name(name)
-                        .nickname("DEFAULT_NICKNAME") // 기본 닉네임 설정
                         .email(email)
                         .password(passwordEncoder.encode("oauth2user"))
                         .provider("kakao")
@@ -402,7 +395,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("카카오 로그인 중 오류가 발생했습니다. (위치 : loginWithOAuth2)", e);
         }
     }
-
 
     //카카오 로그인 유저 정보 조회
     @Override

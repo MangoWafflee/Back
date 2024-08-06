@@ -34,25 +34,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
                 .getUserInfoEndpoint().getUserNameAttributeName();
 
-        // 카카오 사용자 정보 추출
+        // Kakao 사용자 정보 추출
         Long id = oAuth2User.getAttribute(userNameAttributeName);
         Map<String, Object> properties = oAuth2User.getAttribute("properties");
         Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
 
-        String name = null;
-        if (properties != null) {
-            name = (String) properties.get("nickname");
-        }
-        if (name == null && kakaoAccount != null) {
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-            if (profile != null) {
-                name = (String) profile.get("nickname");
-            }
-        }
-        if (name == null) {
-            name = "카카오사용자";
-        }
-
+        String name = kakaoAccount != null ? (String) kakaoAccount.get("profile_nickname") : null;
         String email = kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
 
         // 사용자 정보를 로그에 기록
@@ -71,7 +58,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userEntity = UserEntity.builder()
                     .uid(String.valueOf(id))
                     .name(name)
-                    .nickname("DEFAULT_NICKNAME") // 기본 닉네임 설정 (필요에 따라 사용자가 변경 가능)
                     .email(email)
                     .password(passwordEncoder.encode("OAuth2_User_Password")) // 비밀번호 설정
                     .provider(registrationId)
