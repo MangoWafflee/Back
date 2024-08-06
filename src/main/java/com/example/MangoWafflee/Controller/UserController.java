@@ -41,6 +41,13 @@ public class UserController {
         return ResponseEntity.ok(login);
     }
 
+    //id로 유저 조회
+    @GetMapping("/id/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        UserDTO user = userService.getUserById(id, userDetails);
+        return ResponseEntity.ok(user);
+    }
+
     //uid로 유저 조회
     @GetMapping("/uid/{uid}")
     public ResponseEntity<UserDTO> getUserByUid(@PathVariable String uid, @AuthenticationPrincipal UserDetails userDetails) {

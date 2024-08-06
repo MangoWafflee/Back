@@ -78,6 +78,19 @@ public class UserServiceImpl implements UserService {
         return UserDTO.entityToDto(savedUser);
     }
 
+    //id로 회원 조회
+    @Override
+    public UserDTO getUserById(Long id, UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new RuntimeException("인증되지 않은 유저입니다.");
+        }
+        UserEntity userEntity = userRepository.findById(id).orElse(null);
+        if (userEntity == null) {
+            throw new RuntimeException("유저의 id가 " + id + "인 사용자를 찾을 수 없습니다");
+        }
+        return UserDTO.entityToDto(userEntity);
+    }
+
     //uid로 회원 조회
     @Override
     public UserDTO getUserByUid(String uid, UserDetails userDetails) {

@@ -11,6 +11,7 @@ import java.util.Map;
 
 public interface UserService {
     UserDTO createUser(UserDTO userDTO);
+    UserDTO getUserById(Long id, UserDetails userDetails);
     UserDTO getUserByUid(String uid, UserDetails userDetails);
     UserDTO getUserByNickname(String nickname, UserDetails userDetails);
     Map<String, String> isUidDuplicate(String uid);
