@@ -201,7 +201,7 @@ public class UserServiceImpl implements UserService {
                         .setContentDisposition("inline; filename=" + image.getOriginalFilename())
                         .build();
                 storage.create(blobInfo, image.getBytes());
-                String imageUrl = "https://storage.cloud.google.com/mangowafflee/" + fileName;
+                String imageUrl = "https://storage.googleapis.com/mangowafflee/" + fileName;
                 userEntity.setImage(imageUrl);
                 logger.info("사용자 프로필 이미지 업데이트 완료! " + userEntity);
             } catch (IOException e) {
@@ -442,7 +442,7 @@ public class UserServiceImpl implements UserService {
                         .setContentDisposition("inline; filename=" + image.getOriginalFilename())
                         .build();
                 storage.create(blobInfo, image.getBytes());
-                String imageUrl = "https://storage.cloud.google.com/mangowafflee/" + fileName;
+                String imageUrl = "https://storage.googleapis.com/mangowafflee/" + fileName;
                 userEntity.setImage(imageUrl);
                 userRepository.save(userEntity);
                 logger.info("사용자 프로필 이미지 업데이트 완료! " + userEntity);
